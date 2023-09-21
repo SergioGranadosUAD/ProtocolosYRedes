@@ -29,28 +29,22 @@ int main()
 
 void ConnectUdpClient() {
 	sf::UdpSocket socket;
-	socket.setBlocking(true);
-	sf::IpAddress clientIP = ParseIP("192.168.100.31");
+	socket.setBlocking(false);
 	std::optional<sf::IpAddress> serverIP = ParseIP("192.168.100.31");
+	unsigned short serverPort = 25565;
 
-	char data[5] = "Hola";
-	if (socket.send(data, 5, clientIP, 25565) != sf::Socket::Status::Done) {
-		std::cout << "No se pudo enviar el mensaje" << std::endl;
-	}
-	else {
-		std::cout << "Message sent:" << data << std::endl;
-	}
-
-	unsigned short serverPort = 0;
-	char recData[14];
+	char recData[50];
 	std::size_t received;
-	if (socket.receive(recData, 14, received, serverIP, serverPort) != sf::Socket::Status::Done) {
-		std::cout << "No se pudo recibir la informacion" << std::endl;
-	}
-	else {
-		std::cout << "Message received: " << recData << std::endl;
-	}
-	/*
+	std::optional<sf::IpAddress> senderIP;
+	unsigned short senderPort;
+
+	sf::Clock pingClock;
+	sf::Clock delayClock;
+	sf::Clock timeoutClock;
+	sf::Time pingTime;
+	sf::Time delayTime;
+
+	//Game loop
 	sf::RenderWindow window(sf::VideoMode(sf::Vector2u(800, 600), 32), "Ping test");
 	while (window.isOpen()) {
 		sf::Event event;
@@ -59,41 +53,69 @@ void ConnectUdpClient() {
 				window.close();
 			}
 		}
-	}
 
-	window.clear();
-	window.display();
-	*/
+		pingTime = pingClock.getElapsedTime();
+		if (pingTime.asMilliseconds() > 2000) {
+			pingClock.restart();
+			delayClock.restart();
+
+
+			char data[] = "Ping";
+			if (socket.send(data, sizeof(data), serverIP.value(), serverPort) != sf::Socket::Status::Done) {
+				std::cout << "Could not send the message." << std::endl;
+			}
+			else {
+				std::cout << "Ping sent to server." << std::endl;
+			}
+		}
+
+		if (socket.receive(recData, 50, received, senderIP, senderPort) != sf::Socket::Status::Done) {
+			//std::cout << "Could not receive the information." << std::endl;
+		}
+		else {
+			delayTime = delayClock.getElapsedTime();
+			std::cout << "Received ping from server. Delay time: " << delayTime.asMilliseconds() << " ms." << std::endl;
+		}
+
+		window.clear();
+		window.display();
+
+	}
 }
 
 void SetupUdpServer() {
+	bool clientConnected = true;
+	//Se crea el socket y se bindea.
 	sf::UdpSocket socket;
-	unsigned short clientPort = 25564;
-	sf::IpAddress serverIP = ParseIP("192.168.100.31");
-	std::optional<sf::IpAddress> clientIP = ParseIP("192.168.100.31");
 	if (socket.bind(25565) != sf::Socket::Status::Done) {
-		std::cout << "No se pudo bindear el socket al puerto 25565." << std::endl;
-	}
-	else {
-
+		std::cout << "Could not bind the socket to port 25565." << std::endl;
 	}
 
-	socket.setBlocking(true);
-	char recData[100];
+	char recData[50];
 	std::size_t received;
-	if (socket.receive(recData, 100, received, clientIP, clientPort) == sf::Socket::Status::Done) {
-		std::cout << "Se ha recibido el mensaje: " << recData << std::endl;
-		
-	}
+	std::optional<sf::IpAddress> clientIP;
+	unsigned short clientPort;
 
-	char data[14] = "Hola cliente.";
-	if (socket.send(data, 14, clientIP.value(), clientPort) != sf::Socket::Status::Done) {
-		std::cout << "No se pudo enviar el mensaje" << std::endl;
+	while (clientConnected) {
+		//Se espera recibir mensaje por parte de un cliente.
+		if (socket.receive(recData, 50, received, clientIP, clientPort) == sf::Socket::Status::Done) {
+			std::cout << "Ping from client. " << recData << std::endl;
+
+			//Mensaje recibido, envía una respuesta de vuelta al cliente.
+			char data[] = "Ping.";
+			if (socket.send(data, sizeof(data), clientIP.value(), clientPort) != sf::Socket::Status::Done) {
+				std::cout << "Could not send the message." << std::endl;
+				return;
+			}
+			else {
+				std::cout << "Pinged client back." << std::endl;
+			}
+		}
+		else {
+			std::cout << "Could not receive the message." << std::endl;
+			return;
+		}
 	}
-	else {
-		std::cout << "Se envio el mensaje de vuelta: " << data << std::endl;
-	}
-	
 }
 
 sf::IpAddress ParseIP(std::string ipString) {
