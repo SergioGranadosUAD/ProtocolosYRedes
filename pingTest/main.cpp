@@ -6,7 +6,7 @@
 
 void ConnectUdpClient();
 void SetupUdpServer();
-sf::IpAddress ParseIP(std::string ipString);
+sf::IpAddress GetIP(std::string ipString);
 
 int main()
 {
@@ -30,7 +30,7 @@ int main()
 void ConnectUdpClient() {
 	sf::UdpSocket socket;
 	socket.setBlocking(false);
-	std::optional<sf::IpAddress> serverIP = ParseIP("192.168.100.31");
+	std::optional<sf::IpAddress> serverIP = GetIP("192.168.100.31");
 	unsigned short serverPort = 25565;
 
 	char recData[50];
@@ -38,11 +38,12 @@ void ConnectUdpClient() {
 	std::optional<sf::IpAddress> senderIP;
 	unsigned short senderPort;
 
-	sf::Clock pingClock;
+	sf::Clock cooldownClock;
 	sf::Clock delayClock;
 	sf::Clock timeoutClock;
-	sf::Time pingTime;
+	sf::Time cooldownTime;
 	sf::Time delayTime;
+	sf::Time timeoutTime;
 
 	//Game loop
 	sf::RenderWindow window(sf::VideoMode(sf::Vector2u(800, 600), 32), "Ping test");
@@ -54,9 +55,10 @@ void ConnectUdpClient() {
 			}
 		}
 
-		pingTime = pingClock.getElapsedTime();
-		if (pingTime.asMilliseconds() > 2000) {
-			pingClock.restart();
+		//Se manda un ping cada dos segundos.
+		cooldownTime = cooldownClock.getElapsedTime();
+		if (cooldownTime.asMilliseconds() > 2000) {
+			cooldownClock.restart();
 			delayClock.restart();
 
 
@@ -69,12 +71,21 @@ void ConnectUdpClient() {
 			}
 		}
 
+		//Se revisa si se recibió un mensaje.
 		if (socket.receive(recData, 50, received, senderIP, senderPort) != sf::Socket::Status::Done) {
 			//std::cout << "Could not receive the information." << std::endl;
 		}
 		else {
+			timeoutClock.restart();
 			delayTime = delayClock.getElapsedTime();
 			std::cout << "Received ping from server. Delay time: " << delayTime.asMilliseconds() << " ms." << std::endl;
+		}
+
+		//Si lleva 10 segundos sin recibir respuesta del servidor, se cierra el cliente.
+		timeoutTime = timeoutClock.getElapsedTime();
+		if (timeoutTime.asMilliseconds() > 10000) {
+			std::cout << "Client timeout. Disconnecting." << std::endl;
+			window.close();
 		}
 
 		window.clear();
@@ -84,7 +95,7 @@ void ConnectUdpClient() {
 }
 
 void SetupUdpServer() {
-	bool clientConnected = true;
+	bool clientConnected = false;
 	//Se crea el socket y se bindea.
 	sf::UdpSocket socket;
 	if (socket.bind(25565) != sf::Socket::Status::Done) {
@@ -96,6 +107,16 @@ void SetupUdpServer() {
 	std::optional<sf::IpAddress> clientIP;
 	unsigned short clientPort;
 
+	//Se espera a recibir un mensaje inicial para saber que el cliente se conectó.
+	if (socket.receive(recData, 50, received, clientIP, clientPort) == sf::Socket::Status::Done) {
+		std::cout << "Client connected." << std::endl;
+		clientConnected = true;
+	}
+
+	socket.setBlocking(false);
+	sf::Clock timeoutClock;
+	sf::Time timeoutTime;
+
 	while (clientConnected) {
 		//Se espera recibir mensaje por parte de un cliente.
 		if (socket.receive(recData, 50, received, clientIP, clientPort) == sf::Socket::Status::Done) {
@@ -104,21 +125,26 @@ void SetupUdpServer() {
 			//Mensaje recibido, envía una respuesta de vuelta al cliente.
 			char data[] = "Ping.";
 			if (socket.send(data, sizeof(data), clientIP.value(), clientPort) != sf::Socket::Status::Done) {
-				std::cout << "Could not send the message." << std::endl;
-				return;
+				//std::cout << "Could not send the message." << std::endl;
 			}
 			else {
+				timeoutClock.restart();
 				std::cout << "Pinged client back." << std::endl;
 			}
 		}
 		else {
-			std::cout << "Could not receive the message." << std::endl;
-			return;
+			//std::cout << "Could not receive the message." << std::endl;
+		}
+
+		timeoutTime = timeoutClock.getElapsedTime();
+		if (timeoutTime.asMilliseconds() > 10000) {
+			std::cout << "Client timeout. Disconnecting." << std::endl;
+			clientConnected = false;
 		}
 	}
 }
 
-sf::IpAddress ParseIP(std::string ipString) {
+sf::IpAddress GetIP(std::string ipString) {
 	std::stringstream stream(ipString);
 	int bytes[4];
 	char dot;
