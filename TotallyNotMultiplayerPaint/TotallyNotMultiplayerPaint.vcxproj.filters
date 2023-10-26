@@ -13,14 +13,32 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Archivos de encabezado\Networking">
+      <UniqueIdentifier>{c9635c2c-ee71-449e-a410-eb169aefee45}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de origen\Networking">
+      <UniqueIdentifier>{45fef74e-5532-4fc6-b4b0-5927c6d348e7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Application.h">
+    <ClInclude Include="Include\NetworkRole.h">
+      <Filter>Archivos de encabezado\Networking</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\NetworkRole.cpp">
+      <Filter>Archivos de origen\Networking</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Application.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Drawing.h">
       <Filter>Archivos de encabezado</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Application.cpp">
+    <ClCompile Include="Source\Application.cpp">
+      <Filter>Archivos de origen</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Drawing.cpp">
       <Filter>Archivos de origen</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp">

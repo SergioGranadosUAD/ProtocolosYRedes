@@ -1,11 +1,12 @@
-#pragma once
+//#pragma once
 
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <vector>
 #include <math.h>
+#include "../Include/Drawing.h"
 
-#define PI_OVER_DEGREES = 3.1416 * 0.001
+
 
 const int BITS_PER_PIXEL = 32;
 const int DEFAULT_WIDTH = 800;
@@ -28,14 +29,6 @@ using sf::Shape;
 using sf::Angle;
 using sf::radians;
 
-enum SHAPE_TYPE {
-	LINE = 0,
-	RECTANGLE,
-	CIRCLE,
-	FREEDRAW,
-	TEXT
-};
-
 class Application {
 public:
 	Application();
@@ -50,11 +43,11 @@ public:
 	bool isRunning() const { return m_Window.isOpen(); };
 private:
 	RenderWindow m_Window;
-	vector<sf::Shape*> m_ShapeList;
+	vector<Drawing> m_ShapeList;
 	SHAPE_TYPE m_ActualShape;
-	Shape* m_PreviewShape;
+	Drawing m_PreviewShape;
 	bool m_MouseButtonDown;
 	Vector2f m_InitialMousePosition;
 
-	Shape* CreateShape(Vector2f mousePosition);
+	Vector2f GetMousePosition() { return m_Window.mapPixelToCoords(sf::Mouse::getPosition(m_Window)); };
 };
