@@ -3,6 +3,7 @@
 #include "SFML/Graphics.hpp"
 
 using sf::RectangleShape;
+using sf::Text;
 
 class Button {
 public:
@@ -12,4 +13,5 @@ public:
 
 private:
 	RectangleShape m_drawableShape;
+	//Text m_buttonText;
 };

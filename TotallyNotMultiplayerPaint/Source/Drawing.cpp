@@ -3,7 +3,8 @@
 Drawing::Drawing() :
 	m_pBaseShape(nullptr),
 	m_StartingPosition(Vector2f(0,0)),
-	m_ShapeType(SHAPE_TYPE::LINE)
+	m_ShapeType(SHAPE_TYPE::LINE),
+	m_LineVertexCount(0)
 {
 
 }
@@ -36,7 +37,7 @@ void Drawing::Update(const Vector2f& actualPos)
 		pTempShape->setScale(Vector2f(1, shapeScaleY));
 	}
 	else if (m_ShapeType == SHAPE_TYPE::FREEDRAW) {
-		//Todo
+		_AddVertex(actualPos);
 	}
 }
 
@@ -78,7 +79,10 @@ void Drawing::CreateShape(const Vector2f& startingPos, const SHAPE_TYPE& eShapeT
 		m_pBaseShape = new CircleShape(0);
 		break;
 	case SHAPE_TYPE::FREEDRAW:
-		//Todo
+		m_LineVertexCount++;
+		ConvexShape* pTempShape = new ConvexShape(m_LineVertexCount);
+		pTempShape->setPoint(0, Vector2f(0, 0));
+		m_pBaseShape = pTempShape;
 		break;
 	}
 
@@ -88,9 +92,33 @@ void Drawing::CreateShape(const Vector2f& startingPos, const SHAPE_TYPE& eShapeT
 	m_pBaseShape->setOutlineColor(sf::Color::Red);
 }
 
+void Drawing::FinishFreeDraw()
+{
+	ConvexShape* pTempShape = reinterpret_cast<ConvexShape*>(m_pBaseShape);
+	size_t pointIndex = pTempShape->getPointCount();
+	for (int i = pointIndex-1; i > 0; --i) {
+		m_LineVertexCount++;
+		pTempShape->setPointCount(m_LineVertexCount);
+		pTempShape->setPoint(m_LineVertexCount - 1, pTempShape->getPoint(i));
+	}
+}
+
 void Drawing::SetColor(Color setColor)
 {
 	m_pBaseShape->setOutlineColor(setColor);
+}
+
+void Drawing::_AddVertex(const Vector2f& actualPos)
+{
+	
+	ConvexShape* pTempShape = reinterpret_cast<ConvexShape*>(m_pBaseShape);
+	if (pTempShape->getPoint(m_LineVertexCount-1) == actualPos) {
+		return;
+	}
+
+	m_LineVertexCount++;
+	pTempShape->setPointCount(m_LineVertexCount);
+	pTempShape->setPoint(m_LineVertexCount - 1, actualPos - m_StartingPosition);
 }
 
 

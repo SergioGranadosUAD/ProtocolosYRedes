@@ -47,18 +47,26 @@ void Application::HandleInput() {
 			}
 			break;
 		case Event::MouseButtonPressed:
-			initialMousePixelPos = sf::Mouse::getPosition(m_Window);
-			m_InitialMousePosition = GetMousePosition();
-			m_PreviewShape.CreateShape(m_InitialMousePosition, m_ActualShape);
-			cout << "Shape created at pos " << m_InitialMousePosition.x << ", " << m_InitialMousePosition.y << endl;
+			m_PreviewShape.CreateShape(GetMousePosition(), m_ActualShape);
+			cout << "Shape created at pos " << GetMousePosition().x << ", " << GetMousePosition().y << endl;
 			m_MouseButtonDown = true;
 			break;
 		case Event::MouseButtonReleased:
 			if (m_MouseButtonDown) {
+				if (m_PreviewShape.GetShapeType() == SHAPE_TYPE::FREEDRAW) {
+					m_PreviewShape.FinishFreeDraw();
+				}
 				m_PreviewShape.SetColor(sf::Color::White);
 				m_ShapeList.push_back(m_PreviewShape);
 				m_PreviewShape.Reset();
 				m_MouseButtonDown = false;
+			}
+			break;
+		case Event::MouseMoved:
+			if (m_MouseButtonDown) {
+				if (m_PreviewShape.GetShapePtr() != nullptr && m_MouseButtonDown) {
+					m_PreviewShape.Update(GetMousePosition());
+				}
 			}
 			break;
 		}
@@ -66,9 +74,7 @@ void Application::HandleInput() {
 }
 
 void Application::Update() {
-	if (m_PreviewShape.GetShapePtr() != nullptr && m_MouseButtonDown) {
-		m_PreviewShape.Update(GetMousePosition());
-	}
+
 }
 
 void Application::Render() {

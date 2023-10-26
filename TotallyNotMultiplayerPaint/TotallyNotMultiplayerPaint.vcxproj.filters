@@ -19,6 +19,12 @@
     <Filter Include="Archivos de origen\Networking">
       <UniqueIdentifier>{45fef74e-5532-4fc6-b4b0-5927c6d348e7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Archivos de encabezado\UI">
+      <UniqueIdentifier>{48a04f1a-44d3-424b-8f2c-3219099165f7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de origen\UI">
+      <UniqueIdentifier>{2e9ab918-a7a5-4deb-81be-c34341a211f3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\NetworkRole.h">
@@ -31,18 +37,24 @@
       <Filter>Archivos de encabezado</Filter>
     </ClInclude>
     <ClInclude Include="Include\Drawing.h">
-      <Filter>Archivos de encabezado</Filter>
+      <Filter>Archivos de encabezado\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Button.h">
+      <Filter>Archivos de encabezado\UI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Application.cpp">
       <Filter>Archivos de origen</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Drawing.cpp">
-      <Filter>Archivos de origen</Filter>
-    </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>Archivos de origen</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Drawing.cpp">
+      <Filter>Archivos de origen\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Button.cpp">
+      <Filter>Archivos de origen\UI</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
