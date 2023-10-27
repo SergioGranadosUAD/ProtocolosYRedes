@@ -2,10 +2,10 @@
 
 #include <SFML/Graphics.hpp>
 
+using sf::VertexArray;
 using sf::Shape;
 using sf::RectangleShape;
 using sf::CircleShape;
-using sf::ConvexShape;
 using sf::RenderWindow;
 using sf::Vector2f;
 using sf::Color;
@@ -31,19 +31,19 @@ public:
 	void Clear();
 	void Reset();
 	void CreateShape(const Vector2f& startingPos, const SHAPE_TYPE& eShapeType);
-	void FinishFreeDraw();
 
 	inline Shape* GetShapePtr() { return m_pBaseShape; };
+	inline VertexArray* GetFreeDrawPtr() { return m_pFreeLineShape; };
 	inline SHAPE_TYPE GetShapeType() { return m_ShapeType; };
+	inline bool IsShapeCreated() { return m_ShapeCreated; };
 
 	void SetColor(Color setColor);
 private:
 	Shape* m_pBaseShape;
+	VertexArray* m_pFreeLineShape;
 	SHAPE_TYPE m_ShapeType;
 	Vector2f m_StartingPosition;
 	Vector2f m_FinalPosition;
-	size_t m_LineVertexCount;
-
-	void _AddVertex(const Vector2f& actualPos);
+	bool m_ShapeCreated;
 };
 

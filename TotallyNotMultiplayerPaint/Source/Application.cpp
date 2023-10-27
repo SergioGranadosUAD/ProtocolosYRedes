@@ -53,9 +53,6 @@ void Application::HandleInput() {
 			break;
 		case Event::MouseButtonReleased:
 			if (m_MouseButtonDown) {
-				if (m_PreviewShape.GetShapeType() == SHAPE_TYPE::FREEDRAW) {
-					m_PreviewShape.FinishFreeDraw();
-				}
 				m_PreviewShape.SetColor(sf::Color::White);
 				m_ShapeList.push_back(m_PreviewShape);
 				m_PreviewShape.Reset();
@@ -64,7 +61,7 @@ void Application::HandleInput() {
 			break;
 		case Event::MouseMoved:
 			if (m_MouseButtonDown) {
-				if (m_PreviewShape.GetShapePtr() != nullptr && m_MouseButtonDown) {
+				if (m_PreviewShape.IsShapeCreated() && m_MouseButtonDown) {
 					m_PreviewShape.Update(GetMousePosition());
 				}
 			}
@@ -80,7 +77,7 @@ void Application::Update() {
 void Application::Render() {
 	m_Window.clear();
 
-	if (m_PreviewShape.GetShapePtr() != nullptr) {
+	if (m_PreviewShape.IsShapeCreated()) {
 		m_PreviewShape.Render(m_Window);
 	}
 
