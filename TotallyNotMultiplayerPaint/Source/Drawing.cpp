@@ -4,6 +4,7 @@ Drawing::Drawing() :
 	m_pBaseShape(nullptr),
 	m_StartingPosition(Vector2f(0,0)),
 	m_ShapeType(SHAPE_TYPE::LINE),
+	m_ShapeCreated(false),
 	m_pFreeLineShape(nullptr)
 {
 
@@ -121,7 +122,7 @@ void Drawing::CreateShape(const Vector2f& startingPos, const SHAPE_TYPE& eShapeT
 
 	m_pBaseShape->setPosition(m_StartingPosition);
 	m_pBaseShape->setFillColor(sf::Color::Transparent);
-	m_pBaseShape->setOutlineThickness(5.0f);
+	m_pBaseShape->setOutlineThickness(1.0f);
 	m_pBaseShape->setOutlineColor(sf::Color::Red);
 }
 
