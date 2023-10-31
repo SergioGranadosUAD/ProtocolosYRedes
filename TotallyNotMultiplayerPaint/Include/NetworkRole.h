@@ -2,12 +2,18 @@
 #include "SFML/Network.hpp"
 #include <vector>
 
+#define MESSAGE_TYPE_VAR unsigned short
+
 using Checksum = unsigned int;
 using uint32 = unsigned int;
 using uint16 = unsigned short;
 
 using std::vector;
 using Package = vector<char>;
+using std::string;
+
+using sf::UdpSocket;
+using sf::IpAddress;
 
 
 class NetworkRole {
@@ -23,10 +29,11 @@ public:
 	int countSetBits(const void* pData, size_t sizeofData);
 	Checksum getChecksum(const void* pData, size_t sizeofData);
 	Package getPackage(const void* pData, int sizeofData);
-	bool isPackageValid(const Package& pack);
+	bool isPackageValid(const Package& pack, Package* pOutPackage = nullptr, uint16* pOutDataSize = nullptr);
+	bool getPackageTypeAndData(const Package& pack, uint16& msgType, Package& unpackedData);
 
 private:
-	sf::UdpSocket socket;
+	UdpSocket socket;
 };
 
 template<typename T>

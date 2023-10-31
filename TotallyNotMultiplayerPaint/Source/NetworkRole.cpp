@@ -38,7 +38,7 @@ Package NetworkRole::getPackage(const void* pData, int sizeofData)
 	return newPackage;
 }
 
-bool NetworkRole::isPackageValid(const Package& pack)
+bool NetworkRole::isPackageValid(const Package& pack, Package* pOutPackage = nullptr, uint16* pOutDataSize = nullptr)
 {
 	if (pack.empty() || pack.size() < (sizeof(uint16) + sizeof(Checksum)))
 	{
@@ -49,6 +49,11 @@ bool NetworkRole::isPackageValid(const Package& pack)
 	uint16 dataSize = 0;
 	Package packData;
 
+	if(pOutPackage == nullptr)
+	{
+		pOutPackage = &packData;
+	}
+
 	memcpy(&packChecksum, &pack[0], sizeof(packChecksum));
 	memcpy(&dataSize, &pack[sizeof(packChecksum)], sizeof(dataSize));
 
@@ -57,8 +62,32 @@ bool NetworkRole::isPackageValid(const Package& pack)
 		return false;
 	}
 
-	packData.resize(dataSize);
-	memcpy(&packData[0], &pack[sizeof(packChecksum) + sizeof(dataSize)], dataSize);
+	if (pOutDataSize)
+	{
+		*pOutDataSize = dataSize;
+	}
 
-	return(getChecksum(packData.data(), packData.size()) == packChecksum);
+	pOutPackage->resize(dataSize);
+	memcpy(pOutPackage->data(), &pack[sizeof(packChecksum) + sizeof(dataSize)], dataSize);
+
+	return(getChecksum(pOutPackage->data(), pOutPackage->size()) == packChecksum);
+}
+
+bool NetworkRole::getPackageTypeAndData(const Package& pack, uint16& msgType, Package& unpackedData)
+{
+	if (pack.size() < sizeof(MESSAGE_TYPE_VAR))
+	{
+		return false;
+	}
+
+	memcpy(&msgType, pack.data(), sizeof(MESSAGE_TYPE_VAR));
+
+	if (!(pack.size() > sizeof(MESSAGE_TYPE_VAR)))
+	{
+		return true;
+	}
+
+	auto finalDataSize = pack.size() - sizeof(MESSAGE_TYPE_VAR);
+	unpackedData.resize(finalDataSize);
+	memcpy(unpackedData.data(), pack.data() + sizeof(MESSAGE_TYPE_VAR), finalDataSize);
 }
