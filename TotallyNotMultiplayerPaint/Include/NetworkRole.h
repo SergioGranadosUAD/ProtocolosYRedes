@@ -1,15 +1,13 @@
 #pragma once
 #include "SFML/Network.hpp"
+#include "NetworkMessage.h"
 #include <vector>
-
-#define MESSAGE_TYPE_VAR unsigned short
 
 using Checksum = unsigned int;
 using uint32 = unsigned int;
 using uint16 = unsigned short;
 
 using std::vector;
-using Package = vector<char>;
 using std::string;
 
 using sf::UdpSocket;
@@ -22,7 +20,7 @@ public:
 	virtual ~NetworkRole() = default;
 
 	virtual void waitForMessage() = 0;
-	virtual void sendMessage(vector<char> data) = 0;
+	virtual void sendMessage(NetworkMessage* message) = 0;
 
 	template <typename T>
 	int countSetBits(T data);

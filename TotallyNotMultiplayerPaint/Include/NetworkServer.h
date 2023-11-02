@@ -1,5 +1,6 @@
 #pragma once
 #include "NetworkRole.h"
+#include "NetworkMessage.h"
 #include <unordered_map>
 
 using std::unordered_map;
@@ -16,7 +17,7 @@ public:
 	virtual ~NetworkServer() = default;
 
 	void waitForMessage() override;
-	void sendMessage(vector<char> data) override;
+	void sendMessage(NetworkMessage* message) override;
 
 private:
 	vector<client> m_userList;

@@ -144,8 +144,10 @@
     <ClInclude Include="Include\Application.h" />
     <ClInclude Include="Include\Button.h" />
     <ClInclude Include="Include\Drawing.h" />
+    <ClInclude Include="Include\NetworkClient.h" />
     <ClInclude Include="Include\NetworkMessage.h" />
     <ClInclude Include="Include\NetworkRole.h" />
+    <ClInclude Include="Include\NetworkServer.h" />
     <ClInclude Include="Source\NetworkRole.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -153,7 +155,9 @@
     <ClCompile Include="Source\Application.cpp" />
     <ClCompile Include="Source\Button.cpp" />
     <ClCompile Include="Source\Drawing.cpp" />
+    <ClCompile Include="Source\NetworkClient.cpp" />
     <ClCompile Include="Source\NetworkMessage.cpp" />
+    <ClCompile Include="Source\NetworkServer.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

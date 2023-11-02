@@ -51,6 +51,12 @@
     <ClInclude Include="Include\NetworkMessage.h">
       <Filter>Archivos de encabezado\Networking\Messages</Filter>
     </ClInclude>
+    <ClInclude Include="Include\NetworkClient.h">
+      <Filter>Archivos de encabezado\Networking</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\NetworkServer.h">
+      <Filter>Archivos de encabezado\Networking</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Application.cpp">
@@ -67,6 +73,12 @@
     </ClCompile>
     <ClCompile Include="Source\NetworkMessage.cpp">
       <Filter>Archivos de origen\Networking\Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\NetworkClient.cpp">
+      <Filter>Archivos de origen\Networking</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\NetworkServer.cpp">
+      <Filter>Archivos de origen\Networking</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
