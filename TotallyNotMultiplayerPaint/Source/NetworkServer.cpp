@@ -2,10 +2,9 @@
 
 void NetworkServer::waitForMessage()
 {
-
 }
 
-void NetworkServer::sendMessage(NetworkMessage* message)
+void NetworkServer::sendMessage(NetworkMessage* message, E::NETWORK_MSG messageType)
 {
 
 }

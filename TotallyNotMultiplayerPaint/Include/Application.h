@@ -4,8 +4,10 @@
 #include <iostream>
 #include <vector>
 #include <math.h>
-#include "../Include/Button.h"
-#include "../Include/Drawing.h"
+#include "Button.h"
+#include "Drawing.h"
+#include "NetworkClient.h"
+#include "NetworkMessage.h"
 
 
 
@@ -51,6 +53,7 @@ private:
 	Vector2f m_InitialMousePosition;
 	Button m_buttons[4];
 	Color m_SelectedColor;
+	NetworkClient m_client;
 
 	void setSelectedColor(Color setColor);
 	Vector2f GetMousePosition() { return m_Window.mapPixelToCoords(sf::Mouse::getPosition(m_Window)); };

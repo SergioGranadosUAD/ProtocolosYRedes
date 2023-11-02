@@ -26,6 +26,10 @@ Application::Application() :
 	m_buttons[0].setButtonAction([this]()
 		{
 			setSelectedColor(Color::Red);
+
+			//Prueba para ver la estructura de mensajes. ELIMINAR.
+			MsgConnectRequest* msg = new MsgConnectRequest();
+			m_client.sendMessage(msg, E::kLOGIN_REQUEST);
 		});
 	m_buttons[1].setButtonAction([this]()
 		{

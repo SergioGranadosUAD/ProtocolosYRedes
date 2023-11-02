@@ -43,7 +43,7 @@ public:
 	{
 		MESSAGE_TYPE_VAR MSGTYPE = E::kLOGIN_REQUEST;
 		Package data;
-		data.resize(sizeof(m_msgData) + sizeof(MESSAGE_TYPE_VAR));
+		data.resize(m_msgData.size() + sizeof(MESSAGE_TYPE_VAR));
 		memcpy(data.data(), &MSGTYPE, sizeof(MESSAGE_TYPE_VAR));
 		memcpy(data.data() + sizeof(MESSAGE_TYPE_VAR), m_msgData.data(), m_msgData.size());
 		return data;
@@ -57,6 +57,8 @@ public:
 		}
 
 		memcpy(pDestData, pSrcData, numBytes);
+
+		return true;
 	}
 
 public:
@@ -70,7 +72,7 @@ public:
 	{
 		MESSAGE_TYPE_VAR MSGTYPE = E::kUSERNAME_REQUEST;
 		Package data;
-		data.resize(sizeof(m_msgData) + sizeof(MESSAGE_TYPE_VAR));
+		data.resize(m_msgData.size() + sizeof(MESSAGE_TYPE_VAR));
 		memcpy(data.data(), &MSGTYPE, sizeof(MESSAGE_TYPE_VAR));
 		memcpy(data.data() + sizeof(MESSAGE_TYPE_VAR), m_msgData.data(), m_msgData.size());
 		return data;
@@ -97,7 +99,7 @@ public:
 	{
 		MESSAGE_TYPE_VAR MSGTYPE = E::kUSERNAME_SENT;
 		Package data;
-		data.resize(sizeof(m_msgData) + sizeof(MESSAGE_TYPE_VAR));
+		data.resize(m_msgData.size() + sizeof(MESSAGE_TYPE_VAR));
 		memcpy(data.data(), &MSGTYPE, sizeof(MESSAGE_TYPE_VAR));
 		memcpy(data.data() + sizeof(MESSAGE_TYPE_VAR), m_msgData.data(), m_msgData.size());
 		return data;
@@ -124,7 +126,7 @@ public:
 	{
 		MESSAGE_TYPE_VAR MSGTYPE = E::kPASSWORD_REQUEST;
 		Package data;
-		data.resize(sizeof(m_msgData) + sizeof(MESSAGE_TYPE_VAR));
+		data.resize(m_msgData.size() + sizeof(MESSAGE_TYPE_VAR));
 		memcpy(data.data(), &MSGTYPE, sizeof(MESSAGE_TYPE_VAR));
 		memcpy(data.data() + sizeof(MESSAGE_TYPE_VAR), m_msgData.data(), m_msgData.size());
 		return data;
@@ -151,7 +153,7 @@ public:
 	{
 		MESSAGE_TYPE_VAR MSGTYPE = E::kPASSWORD_SENT;
 		Package data;
-		data.resize(sizeof(m_msgData) + sizeof(MESSAGE_TYPE_VAR));
+		data.resize(m_msgData.size() + sizeof(MESSAGE_TYPE_VAR));
 		memcpy(data.data(), &MSGTYPE, sizeof(MESSAGE_TYPE_VAR));
 		memcpy(data.data() + sizeof(MESSAGE_TYPE_VAR), m_msgData.data(), m_msgData.size());
 		return data;
@@ -178,7 +180,7 @@ public:
 	{
 		MESSAGE_TYPE_VAR MSGTYPE = E::kCONNECTION_SUCCESSFUL;
 		Package data;
-		data.resize(sizeof(m_msgData) + sizeof(MESSAGE_TYPE_VAR));
+		data.resize(m_msgData.size() + sizeof(MESSAGE_TYPE_VAR));
 		memcpy(data.data(), &MSGTYPE, sizeof(MESSAGE_TYPE_VAR));
 		memcpy(data.data() + sizeof(MESSAGE_TYPE_VAR), m_msgData.data(), m_msgData.size());
 		return data;
@@ -205,7 +207,7 @@ public:
 	{
 		MESSAGE_TYPE_VAR MSGTYPE = E::kDISCONNECTION;
 		Package data;
-		data.resize(sizeof(m_msgData) + sizeof(MESSAGE_TYPE_VAR));
+		data.resize(m_msgData.size() + sizeof(MESSAGE_TYPE_VAR));
 		memcpy(data.data(), &MSGTYPE, sizeof(MESSAGE_TYPE_VAR));
 		memcpy(data.data() + sizeof(MESSAGE_TYPE_VAR), m_msgData.data(), m_msgData.size());
 		return data;
