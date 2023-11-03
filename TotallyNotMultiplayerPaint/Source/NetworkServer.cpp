@@ -237,6 +237,8 @@ void NetworkServer::handlePackage(Package& unpackedData, const uint16& msgType, 
 	switch (msgType) {
 	case E::kLOGIN_REQUEST:
 	{
+		std::cout << "Un usuario se esta conectando..." << endl;
+
 		if (clientIsAlreadyConnecting(messageSender))
 		{
 			MsgDisconnected message;
@@ -255,6 +257,8 @@ void NetworkServer::handlePackage(Package& unpackedData, const uint16& msgType, 
 	break;
 	case E::kSIGNUP_REQUEST:
 	{
+		std::cout << "Un usuario se esta conectando..." << endl;
+
 		if (clientIsAlreadyConnecting(messageSender))
 		{
 			MsgDisconnected message;
@@ -273,24 +277,26 @@ void NetworkServer::handlePackage(Package& unpackedData, const uint16& msgType, 
 	break;
 	case E::kUSERNAME_SENT:
 	{
-		string username;
-		MsgUsernameSent msg;
-		msg.unpackData(&username, unpackedData.data(), unpackedData.size());
+		string username(unpackedData.data());
+		username.resize(unpackedData.size());
 
 		for (auto& client : m_incomingClients)
 		{
 			if (client.userIp.value() == messageSender.userIp.value() && client.userPort == messageSender.userPort)
 			{
+				cout << "Nombre de usuario elegido por el cliente: " << username << endl;
 				client.userName = username;
 			}
 		}
+
+		MsgPasswordRequest message;
+		sendMessage(&message, E::kPASSWORD_REQUEST, messageSender);
 	}
 	break;
 	case E::kPASSWORD_SENT:
 	{
-		string password;
-		MsgPasswordSent msg;
-		msg.unpackData(&password, unpackedData.data(), unpackedData.size());
+		string password(unpackedData.data());
+		password.resize(unpackedData.size());
 
 		UnconnectedClient clientReference;
 
@@ -298,6 +304,7 @@ void NetworkServer::handlePackage(Package& unpackedData, const uint16& msgType, 
 		{
 			if (m_incomingClients[i].userIp.value() == messageSender.userIp.value() && m_incomingClients[i].userPort == messageSender.userPort)
 			{
+				cout << "Password elegida por el cliente: " << password << endl;
 				m_incomingClients[i].userPass = password;
 				clientReference = m_incomingClients[i];
 				m_incomingClients.erase(m_incomingClients.begin() + i);
@@ -320,12 +327,12 @@ void NetworkServer::handlePackage(Package& unpackedData, const uint16& msgType, 
 					m_userList.push_back(newClient);
 
 					MsgConnected message;
-					sendMessage(&message, E::kCONNECTION_SUCCESSFUL);
+					sendMessage(&message, E::kCONNECTION_SUCCESSFUL, messageSender);
 				}
 				else
 				{
 					MsgDisconnected message;
-					sendMessage(&message, E::kDISCONNECTION);
+					sendMessage(&message, E::kDISCONNECTION, messageSender);
 				}
 				return;
 			}
@@ -338,7 +345,9 @@ void NetworkServer::handlePackage(Package& unpackedData, const uint16& msgType, 
 		m_userList.push_back(newClient);
 
 		MsgConnected message;
-		sendMessage(&message, E::kCONNECTION_SUCCESSFUL);
+		sendMessage(&message, E::kCONNECTION_SUCCESSFUL, messageSender);
+
+		cout << "Usuario conectado:" << newClient.userIp.value() << ":" << newClient.userPort << endl;
 	}
 	break;
 	case E::kDISCONNECTION:
@@ -349,7 +358,7 @@ void NetworkServer::handlePackage(Package& unpackedData, const uint16& msgType, 
 				messageSender.userPort == m_userList[i].userPort)
 			{
 				cout << "Usuario desconectado: " << messageSender.userIp.value().toString() << ":" << messageSender.userPort << endl;
-				m_userList.erase(m_userList.begin()+i);
+				m_userList.erase(m_userList.begin() + i);
 			}
 		}
 	}
@@ -359,16 +368,27 @@ void NetworkServer::handlePackage(Package& unpackedData, const uint16& msgType, 
 	case E::kCREATE_CIRCLE:
 	case E::kCREATE_FREEDRAW:
 	{
+		MsgCreateLine m;
+		MsgCreateLine::LineData realData;
+		m.unpackData(&realData, unpackedData.data(), unpackedData.size());
+
+		cout << "Shape created by user." << endl;
 		E::NETWORK_MSG typeToSend = static_cast<E::NETWORK_MSG>(msgType);
 		MsgCreateLine message(unpackedData);
-		for (auto& client : m_userList) 
+		for (auto& client : m_userList)
 		{
-			sendMessage(&message, typeToSend, client);
+			if ((client.userIp.value() != messageSender.userIp.value() && client.userPort != messageSender.userPort) ||
+				(client.userIp.value() == messageSender.userIp.value() && client.userPort != messageSender.userPort))
+			{
+				cout << "Sending shape information to user " << client.userIp.value() << client.userPort << endl;
+				sendMessage(&message, typeToSend, client);
+			}
 		}
 	}
 	break;
 	default:
 	{
 		cout << "Tipo de mensaje invalido." << endl;
+	}
 	}
 }

@@ -7,8 +7,12 @@ NetworkClient::NetworkClient() :
 	socket.setBlocking(false);
 }
 
-//Agregar valor de retorno. ¿Regresar void* a castear y tipo de mensaje por medio de parámetro de salida?
 bool NetworkClient::waitForMessage()
+{
+	return false;
+}
+
+bool NetworkClient::waitForMessage(Package* messageData, uint16* messageType)
 {
 	Package incomingPackage;
 	incomingPackage.resize(2048);
@@ -31,10 +35,10 @@ bool NetworkClient::waitForMessage()
 		return false;
 	}
 
-	uint16 msgType = E::kERROR;
-	Package unpackedData;
+	//uint16 msgType = E::kERROR;
+	//Package unpackedData;
 
-	getPackageTypeAndData(realPackage, msgType, unpackedData);
+	getPackageTypeAndData(realPackage, *messageType, *messageData);
 	return true;
 }
 
@@ -48,6 +52,12 @@ void NetworkClient::sendMessage(NetworkMessage* message, E::NETWORK_MSG messageT
 		connectData = msgObject->packData();
 	}
 		break;
+	case E::kSIGNUP_REQUEST:
+	{
+		MsgSignupRequest* msgObject = reinterpret_cast<MsgSignupRequest*>(message);
+		connectData = msgObject->packData();
+	}
+	break;
 	case E::kUSERNAME_REQUEST: 
 	{
 		MsgUsernameRequest* msgObject = reinterpret_cast<MsgUsernameRequest*>(message);
@@ -218,4 +228,9 @@ void NetworkClient::setServerIP(string ip)
 void NetworkClient::setServerPort(unsigned short port)
 {
 	m_serverPort = port;
+}
+
+void NetworkClient::setConnection(bool connectionStatus)
+{
+	m_connected = connectionStatus;
 }

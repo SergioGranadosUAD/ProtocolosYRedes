@@ -18,15 +18,38 @@ Application::Application() :
 	cout << "Introduzca el puerto del servidor al que se desea conectar." << endl;
 	cin >> serverPort;
 	m_client.setServerPort(serverPort);
+	string connectionMode;
+	cout << "Introduzca 'l' para iniciar sesion, o 'r' para registrarse." << endl;
+	cin >> connectionMode;
+
+	E::NETWORK_MSG connectionType;
+	if (connectionMode == "l")
+	{
+		connectionType = E::kLOGIN_REQUEST;
+	}
+	else if(connectionMode == "r")
+	{
+		connectionType = E::kSIGNUP_REQUEST;
+	}
+	else
+	{
+		connectionType = E::kLOGIN_REQUEST;
+		cout << "Error al seleccionar. Intentando iniciar sesion." << endl;
+	}
 
 	MsgConnectRequest connectionRequest;
-	m_client.sendMessage(&connectionRequest, E::kLOGIN_REQUEST);
+	m_client.sendMessage(&connectionRequest, connectionType);
 
 	while (!m_client.isConnected())
 	{
-		uint16 msgType;
+		uint16 msgType = -1;
 		Package unpackedData;
-		m_client.waitForMessage();
+		m_client.waitForMessage(&unpackedData, &msgType);
+
+		if (msgType != -1 && !unpackedData.empty()) 
+		{
+			handlePackage(unpackedData, msgType);
+		}
 	}
 
 	/////////////////////
@@ -82,7 +105,8 @@ Application::Application(int windowWidth, int windowHeight):
 
 Application::~Application() 
 {
-
+	MsgDisconnected msg;
+	m_client.sendMessage(&msg, E::kDISCONNECTION);
 }
 
 void Application::HandleInput() 
@@ -127,6 +151,7 @@ void Application::HandleInput()
 			if (m_MouseButtonDown) {
 				m_PreviewShape.SetColor(m_SelectedColor);
 				m_ShapeList.push_back(m_PreviewShape);
+				sendShape();
 				m_PreviewShape.Reset();
 				m_MouseButtonDown = false;
 			}
@@ -143,7 +168,10 @@ void Application::HandleInput()
 }
 
 void Application::Update() {
-
+	uint16 msgType;
+	Package unpackedData;
+	m_client.waitForMessage(&unpackedData, &msgType);
+	handlePackage(unpackedData, msgType);
 }
 
 void Application::Render() {
@@ -167,5 +195,160 @@ void Application::Render() {
 void Application::setSelectedColor(Color setColor)
 {
 	m_SelectedColor = setColor;
+}
+
+void Application::handlePackage(Package unpackedData, uint16 msgType)
+{
+	switch (msgType)
+	{
+	case E::kUSERNAME_REQUEST:
+	{
+		MsgUsernameRequest m;
+		string realData = m.m_msgData;
+		m.unpackData(&realData, unpackedData.data(), unpackedData.size());
+		std::cout << "[SERVER] " << realData << endl;
+
+		string username;
+		cin >> username;
+
+		MsgUsernameSent message(username);
+		m_client.sendMessage(&message, E::kUSERNAME_SENT);
+	}
+	break;
+	case E::kPASSWORD_REQUEST:
+	{
+		MsgPasswordRequest m;
+		string realData = m.m_msgData;
+		m.unpackData(&realData, unpackedData.data(), unpackedData.size());
+		std::cout << "[SERVER] " << realData << endl;
+
+		string password;
+		cin >> password;
+
+		MsgPasswordSent message(password);
+		m_client.sendMessage(&message, E::kPASSWORD_SENT);
+
+
+	}
+	break;
+	case E::kCONNECTION_SUCCESSFUL:
+	{
+		MsgConnected m;
+		string realData = m.m_msgData;
+		m.unpackData(&realData, unpackedData.data(), unpackedData.size());
+		std::cout << "[SERVER] " << realData << endl;
+
+		m_client.setConnection(true);
+	}
+	break;
+	case E::kDISCONNECTION:
+	{
+		MsgDisconnected m;
+		string realData;
+		m.unpackData(&realData, unpackedData.data(), unpackedData.size());
+		std::cout << "[SERVER] " << realData << endl;
+		m_Window.close();
+	}
+	break;
+	case E::kCREATE_LINE:
+	{
+		MsgCreateLine m;
+		MsgCreateLine::LineData realData;
+		m.unpackData(&realData, unpackedData.data(), unpackedData.size());
+
+		SHAPE_TYPE shpType = SHAPE_TYPE::LINE;
+
+		Drawing sentShape;
+		sentShape.CreateShape(Vector2f(realData.initialPosX, realData.initialPosY), shpType);
+		sentShape.Update(Vector2f(realData.finalPosX, realData.finalPosY));
+		//sentShape.SetColor(static_cast<COLOR_TYPE>(realData.colorID));
+		m_ShapeList.push_back(sentShape);
+
+		std::cout << "Shape sync by server." << endl;
+	}
+	break;
+	case E::kCREATE_RECTANGLE:
+	{
+		MsgCreateRectangle m;
+		MsgCreateRectangle::RectangleData realData;
+		m.unpackData(&realData, unpackedData.data(), unpackedData.size());
+
+		SHAPE_TYPE shpType = SHAPE_TYPE::RECTANGLE;
+
+		Drawing sentShape;
+		sentShape.CreateShape(Vector2f(realData.initialPosX, realData.initialPosY), shpType);
+		sentShape.Update(Vector2f(realData.finalPosX, realData.finalPosY));
+		//sentShape.SetColor(static_cast<COLOR_TYPE>(realData.colorID));
+		m_ShapeList.push_back(sentShape);
+
+		std::cout << "Shape sync by server." << endl;
+	}
+	break;
+	case E::kCREATE_CIRCLE:
+	{
+		MsgCreateCircle m;
+		MsgCreateCircle::CircleData realData;
+		m.unpackData(&realData, unpackedData.data(), unpackedData.size());
+
+		SHAPE_TYPE shpType = SHAPE_TYPE::CIRCLE;
+
+		Drawing sentShape;
+		sentShape.CreateShape(Vector2f(realData.initialPosX, realData.initialPosY), shpType);
+		sentShape.Update(Vector2f(realData.finalPosX, realData.finalPosY));
+		//sentShape.SetColor(static_cast<COLOR_TYPE>(realData.colorID));
+		m_ShapeList.push_back(sentShape);
+
+		std::cout << "Shape sync by server." << endl;
+	}
+	break;
+	case E::kCREATE_FREEDRAW:
+	{
+		MsgCreateFreedraw m;
+		MsgCreateFreedraw::FreedrawData realData;
+		m.unpackData(&realData, unpackedData.data(), unpackedData.size());
+
+		SHAPE_TYPE shpType = SHAPE_TYPE::FREEDRAW;
+
+		/*Drawing sentShape;
+		sentShape.CreateShape(Vector2f(realData.initialPosX, realData.initialPosY), shpType);
+		sentShape.Update(Vector2f(realData.finalPosX, realData.finalPosY));
+		//sentShape.SetColor(static_cast<COLOR_TYPE>(realData.colorID));
+		m_ShapeList.push_back(sentShape);*/
+	}
+	break;
+	}
+}
+
+void Application::sendShape()
+{
+	Vector2f startingPos = m_PreviewShape.getStartingPos();
+	Vector2f finalPos = m_PreviewShape.getFinalPos();
+	unsigned short colorID = 0;
+	switch (m_ActualShape)
+	{
+	case SHAPE_TYPE::LINE:
+	{
+		MsgCreateLine msg(startingPos.x, startingPos.y, finalPos.x, finalPos.y, colorID);
+		m_client.sendMessage(&msg, E::kCREATE_LINE);
+	}
+	break;
+	case SHAPE_TYPE::RECTANGLE:
+	{
+		MsgCreateRectangle msg(startingPos.x, startingPos.y, finalPos.x, finalPos.y, colorID);
+		m_client.sendMessage(&msg, E::kCREATE_RECTANGLE);
+	}
+	break;
+	case SHAPE_TYPE::CIRCLE:
+	{
+		MsgCreateCircle msg(startingPos.x, startingPos.y, finalPos.x, finalPos.y, colorID);
+		m_client.sendMessage(&msg, E::kCREATE_CIRCLE);
+	}
+	break;
+	case SHAPE_TYPE::FREEDRAW:
+	{
+		//MsgCreateFreedraw msg(startingPos.x, startingPos.y, finalPos.x, finalPos.y, colorID);
+	}
+	break;
+	}
 }
 

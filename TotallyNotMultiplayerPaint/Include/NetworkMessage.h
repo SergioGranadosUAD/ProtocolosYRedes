@@ -115,6 +115,7 @@ public:
 		}
 
 		memcpy(pDestData, pSrcData, numBytes);
+		return true;
 	}
 
 public:
@@ -124,6 +125,10 @@ public:
 class MsgUsernameSent : public NetworkMessage
 {
 public:
+	MsgUsernameSent() = default;
+	MsgUsernameSent(string msgData) : m_msgData(msgData) {};
+	~MsgUsernameSent() = default;
+
 	Package packData() override
 	{
 		MESSAGE_TYPE_VAR MSGTYPE = E::kUSERNAME_SENT;
@@ -136,12 +141,16 @@ public:
 
 	bool unpackData(void* pSrcData, void* pDestData, size_t numBytes) override
 	{
-		/*if (numBytes != sizeof(m_msgData.size()))
+		string test(static_cast<char*>(pDestData));
+		test.resize(numBytes);
+		if (numBytes < sizeof(char))
 		{
 			return false;
-		}*/
+		}
 
-		memcpy(pDestData, pSrcData, numBytes);
+		//memcpy(pDestData, pSrcData, numBytes);
+		pSrcData = &test;
+		return true;
 	}
 
 public:
@@ -169,6 +178,7 @@ public:
 		}
 
 		memcpy(pDestData, pSrcData, numBytes);
+		return true;
 	}
 
 public:
@@ -178,6 +188,10 @@ public:
 class MsgPasswordSent : public NetworkMessage
 {
 public:
+	MsgPasswordSent() = default;
+	MsgPasswordSent(string msgData) : m_msgData(msgData) {};
+	~MsgPasswordSent() = default;
+
 	Package packData() override
 	{
 		MESSAGE_TYPE_VAR MSGTYPE = E::kPASSWORD_SENT;
@@ -190,12 +204,16 @@ public:
 
 	bool unpackData(void* pSrcData, void* pDestData, size_t numBytes) override
 	{
-		/*if (numBytes != sizeof(m_msgData.size()))
+		string test(static_cast<char*>(pDestData));
+		test.resize(numBytes);
+		if (numBytes < sizeof(char))
 		{
 			return false;
-		}*/
+		}
 
-		memcpy(pDestData, pSrcData, numBytes);
+		//memcpy(pDestData, pSrcData, numBytes);
+		pSrcData = &test;
+		return true;
 	}
 
 public:
@@ -223,6 +241,7 @@ public:
 		}
 
 		memcpy(pDestData, pSrcData, numBytes);
+		return true;
 	}
 
 public:
@@ -250,6 +269,7 @@ public:
 		}
 
 		memcpy(pDestData, pSrcData, numBytes);
+		return true;
 	}
 
 public:
@@ -268,8 +288,8 @@ public:
 		m_msgData.initialPosX = iniPosX;
 		m_msgData.initialPosY = iniPosY;
 		m_msgData.finalPosX = finPosX;
-		m_msgData.finalPosY = finPosX;
-		m_msgData.colorID = finPosX;
+		m_msgData.finalPosY = finPosY;
+		m_msgData.colorID = colorID;
 	};
 	virtual ~MsgCreateLine() = default;
 
@@ -291,6 +311,7 @@ public:
 		}
 
 		memcpy(pDestData, pSrcData, numBytes);
+		return true;
 	}
 
 public:
@@ -316,8 +337,8 @@ public:
 		m_msgData.initialPosX = iniPosX;
 		m_msgData.initialPosY = iniPosY;
 		m_msgData.finalPosX = finPosX;
-		m_msgData.finalPosY = finPosX;
-		m_msgData.colorID = finPosX;
+		m_msgData.finalPosY = finPosY;
+		m_msgData.colorID = colorID;
 	};
 	virtual ~MsgCreateRectangle() = default;
 
@@ -339,6 +360,7 @@ public:
 		}
 
 		memcpy(pDestData, pSrcData, numBytes);
+		return true;
 	}
 
 public:
@@ -364,8 +386,8 @@ public:
 		m_msgData.initialPosX = iniPosX;
 		m_msgData.initialPosY = iniPosY;
 		m_msgData.finalPosX = finPosX;
-		m_msgData.finalPosY = finPosX;
-		m_msgData.colorID = finPosX;
+		m_msgData.finalPosY = finPosY;
+		m_msgData.colorID = colorID;
 	};
 	virtual ~MsgCreateCircle() = default;
 
@@ -387,6 +409,7 @@ public:
 		}
 
 		memcpy(pDestData, pSrcData, numBytes);
+		return true;
 	}
 
 public:
@@ -415,19 +438,20 @@ public:
 
 	bool unpackData(void* pSrcData, void* pDestData, size_t numBytes) override
 	{
-		if (numBytes != sizeof(m_msgData))
+		/*if (numBytes != sizeof(m_msgData.size()))
 		{
 			return false;
-		}
+		}*/
 
 		memcpy(pDestData, pSrcData, numBytes);
+		return true;
 	}
 
 public:
 	struct FreedrawData
 	{
 		size_t vectorSize;
-		//vector<float> pointPositions;
+		vector<float> pointPositions;
 		unsigned short colorID;
 	} m_msgData;
 };

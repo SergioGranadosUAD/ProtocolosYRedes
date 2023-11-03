@@ -31,11 +31,14 @@ public:
 	void Clear();
 	void Reset();
 	void CreateShape(const Vector2f& startingPos, const SHAPE_TYPE& eShapeType);
+	void CreateShape(const Vector2f& startingPos, const Vector2f& finalPos, const SHAPE_TYPE& eShapeType);
 
 	inline Shape* GetShapePtr() { return m_pBaseShape; };
 	inline VertexArray* GetFreeDrawPtr() { return m_pFreeLineShape; };
 	inline SHAPE_TYPE GetShapeType() { return m_ShapeType; };
 	inline bool IsShapeCreated() { return m_ShapeCreated; };
+	inline Vector2f getStartingPos() { return m_StartingPosition; };
+	inline Vector2f getFinalPos() { return m_FinalPosition; };
 
 	void SetColor(Color setColor);
 private:

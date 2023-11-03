@@ -43,6 +43,8 @@ public:
 	void Update();
 	void Render();
 	
+	void handlePackage(Package unpackedData, uint16 msgType);
+	void sendShape();
 
 	bool isRunning() const { return m_Window.isOpen(); };
 private:

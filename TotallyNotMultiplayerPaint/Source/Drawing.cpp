@@ -48,6 +48,8 @@ void Drawing::Update(const Vector2f& actualPos)
 		size_t vertexCount = m_pFreeLineShape->getVertexCount() - 1;
 		(*m_pFreeLineShape)[vertexCount].color = sf::Color::Red;
 	}
+
+	m_FinalPosition = actualPos;
 }
 
 void Drawing::Render(RenderWindow& window)
@@ -124,6 +126,10 @@ void Drawing::CreateShape(const Vector2f& startingPos, const SHAPE_TYPE& eShapeT
 	m_pBaseShape->setFillColor(sf::Color::Transparent);
 	m_pBaseShape->setOutlineThickness(1.0f);
 	m_pBaseShape->setOutlineColor(sf::Color::Red);
+}
+
+void Drawing::CreateShape(const Vector2f& startingPos, const Vector2f& finalPos, const SHAPE_TYPE& eShapeType)
+{
 }
 
 void Drawing::SetColor(Color setColor)
