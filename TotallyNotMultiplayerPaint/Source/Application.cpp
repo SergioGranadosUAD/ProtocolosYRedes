@@ -171,7 +171,11 @@ void Application::Update() {
 	uint16 msgType;
 	Package unpackedData;
 	m_client.waitForMessage(&unpackedData, &msgType);
-	handlePackage(unpackedData, msgType);
+	
+	if (msgType != -1 && !unpackedData.empty())
+	{
+		handlePackage(unpackedData, msgType);
+	}
 }
 
 void Application::Render() {
@@ -253,8 +257,8 @@ void Application::handlePackage(Package unpackedData, uint16 msgType)
 	case E::kCREATE_LINE:
 	{
 		MsgCreateLine m;
-		MsgCreateLine::LineData realData;
-		m.unpackData(&realData, unpackedData.data(), unpackedData.size());
+		MsgCreateLine::LineData realData = *(reinterpret_cast<MsgCreateLine::LineData*>(unpackedData.data()));
+		//m.unpackData(&realData, unpackedData.data(), unpackedData.size());
 
 		SHAPE_TYPE shpType = SHAPE_TYPE::LINE;
 
@@ -270,8 +274,8 @@ void Application::handlePackage(Package unpackedData, uint16 msgType)
 	case E::kCREATE_RECTANGLE:
 	{
 		MsgCreateRectangle m;
-		MsgCreateRectangle::RectangleData realData;
-		m.unpackData(&realData, unpackedData.data(), unpackedData.size());
+		MsgCreateRectangle::RectangleData realData = *(reinterpret_cast<MsgCreateRectangle::RectangleData*>(unpackedData.data()));
+		//m.unpackData(&realData, unpackedData.data(), unpackedData.size());
 
 		SHAPE_TYPE shpType = SHAPE_TYPE::RECTANGLE;
 
@@ -287,8 +291,8 @@ void Application::handlePackage(Package unpackedData, uint16 msgType)
 	case E::kCREATE_CIRCLE:
 	{
 		MsgCreateCircle m;
-		MsgCreateCircle::CircleData realData;
-		m.unpackData(&realData, unpackedData.data(), unpackedData.size());
+		MsgCreateCircle::CircleData realData = *(reinterpret_cast<MsgCreateCircle::CircleData*>(unpackedData.data()));
+		//m.unpackData(&realData, unpackedData.data(), unpackedData.size());
 
 		SHAPE_TYPE shpType = SHAPE_TYPE::CIRCLE;
 

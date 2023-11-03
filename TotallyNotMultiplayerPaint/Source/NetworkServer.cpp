@@ -364,17 +364,67 @@ void NetworkServer::handlePackage(Package& unpackedData, const uint16& msgType, 
 	}
 	break;
 	case E::kCREATE_LINE:
-	case E::kCREATE_RECTANGLE:
-	case E::kCREATE_CIRCLE:
-	case E::kCREATE_FREEDRAW:
 	{
 		MsgCreateLine m;
-		MsgCreateLine::LineData realData;
-		m.unpackData(&realData, unpackedData.data(), unpackedData.size());
+		MsgCreateLine::LineData realData = *(reinterpret_cast<MsgCreateLine::LineData*>(unpackedData.data()));
+		//m.unpackData(&realData, unpackedData.data(), unpackedData.size());
 
 		cout << "Shape created by user." << endl;
 		E::NETWORK_MSG typeToSend = static_cast<E::NETWORK_MSG>(msgType);
-		MsgCreateLine message(unpackedData);
+
+		MsgCreateLine message(realData.initialPosX,
+			realData.initialPosY,
+			realData.finalPosX,
+			realData.finalPosY,
+			realData.colorID);
+		for (auto& client : m_userList)
+		{
+			if ((client.userIp.value() != messageSender.userIp.value() && client.userPort != messageSender.userPort) ||
+				(client.userIp.value() == messageSender.userIp.value() && client.userPort != messageSender.userPort))
+			{
+				cout << "Sending shape information to user " << client.userIp.value() << ":" << client.userPort << endl;
+				sendMessage(&message, typeToSend, client);
+			}
+		}
+	}
+	break;
+	case E::kCREATE_RECTANGLE:
+	{
+		MsgCreateRectangle m;
+		MsgCreateRectangle::RectangleData realData = *(reinterpret_cast<MsgCreateRectangle::RectangleData*>(unpackedData.data()));
+		//m.unpackData(&realData, unpackedData.data(), unpackedData.size());
+
+		cout << "Shape created by user." << endl;
+		E::NETWORK_MSG typeToSend = static_cast<E::NETWORK_MSG>(msgType);
+		MsgCreateRectangle message(realData.initialPosX,
+			realData.initialPosY,
+			realData.finalPosX,
+			realData.finalPosY,
+			realData.colorID);
+		for (auto& client : m_userList)
+		{
+			if ((client.userIp.value() != messageSender.userIp.value() && client.userPort != messageSender.userPort) ||
+				(client.userIp.value() == messageSender.userIp.value() && client.userPort != messageSender.userPort))
+			{
+				cout << "Sending shape information to user " << client.userIp.value() << ":" << client.userPort << endl;
+				sendMessage(&message, typeToSend, client);
+			}
+		}
+	}
+	break;
+	case E::kCREATE_CIRCLE:
+	{
+		MsgCreateCircle m;
+		MsgCreateCircle::CircleData realData = *(reinterpret_cast<MsgCreateCircle::CircleData*>(unpackedData.data()));
+		//m.unpackData(&realData, unpackedData.data(), unpackedData.size());
+
+		cout << "Shape created by user." << endl;
+		E::NETWORK_MSG typeToSend = static_cast<E::NETWORK_MSG>(msgType);
+		MsgCreateCircle message(realData.initialPosX,
+			realData.initialPosY,
+			realData.finalPosX,
+			realData.finalPosY,
+			realData.colorID);
 		for (auto& client : m_userList)
 		{
 			if ((client.userIp.value() != messageSender.userIp.value() && client.userPort != messageSender.userPort) ||
@@ -384,6 +434,11 @@ void NetworkServer::handlePackage(Package& unpackedData, const uint16& msgType, 
 				sendMessage(&message, typeToSend, client);
 			}
 		}
+	}
+	break;
+	case E::kCREATE_FREEDRAW:
+	{
+		
 	}
 	break;
 	default:

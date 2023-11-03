@@ -309,8 +309,9 @@ public:
 		{
 			return false;
 		}
-
-		memcpy(pDestData, pSrcData, numBytes);
+		LineData* test = reinterpret_cast<LineData*>(pDestData);
+		pSrcData = &test;
+		//memcpy(pDestData, pSrcData, numBytes);
 		return true;
 	}
 
@@ -358,8 +359,9 @@ public:
 		{
 			return false;
 		}
-
-		memcpy(pDestData, pSrcData, numBytes);
+		RectangleData* test = reinterpret_cast<RectangleData*>(pDestData);
+		pSrcData = &test;
+		//memcpy(pDestData, pSrcData, numBytes);
 		return true;
 	}
 
@@ -407,8 +409,9 @@ public:
 		{
 			return false;
 		}
-
-		memcpy(pDestData, pSrcData, numBytes);
+		CircleData* test = reinterpret_cast<CircleData*>(pDestData);
+		pSrcData = &test;
+		//memcpy(pDestData, pSrcData, numBytes);
 		return true;
 	}
 
@@ -438,12 +441,13 @@ public:
 
 	bool unpackData(void* pSrcData, void* pDestData, size_t numBytes) override
 	{
-		/*if (numBytes != sizeof(m_msgData.size()))
+		if (numBytes != sizeof(m_msgData))
 		{
 			return false;
-		}*/
-
-		memcpy(pDestData, pSrcData, numBytes);
+		}
+		FreedrawData* test = reinterpret_cast<FreedrawData*>(pDestData);
+		pSrcData = &test;
+		//memcpy(pDestData, pSrcData, numBytes);
 		return true;
 	}
 
@@ -451,7 +455,7 @@ public:
 	struct FreedrawData
 	{
 		size_t vectorSize;
-		vector<float> pointPositions;
 		unsigned short colorID;
+		vector<float> pointPositions;
 	} m_msgData;
 };
