@@ -20,7 +20,7 @@ public:
 	NetworkRole() = default;
 	virtual ~NetworkRole() = default;
 
-	virtual void waitForMessage() = 0;
+	virtual bool waitForMessage() = 0;
 	virtual void sendMessage(NetworkMessage* message, E::NETWORK_MSG messageType) = 0;
 
 	virtual int countSetBits(const void* pData, size_t sizeofData) = 0;

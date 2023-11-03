@@ -65,6 +65,35 @@ public:
 	const string m_msgData = "CONNECT";
 };
 
+class MsgSignupRequest : public NetworkMessage
+{
+public:
+	Package packData() override
+	{
+		MESSAGE_TYPE_VAR MSGTYPE = E::kLOGIN_REQUEST;
+		Package data;
+		data.resize(m_msgData.size() + sizeof(MESSAGE_TYPE_VAR));
+		memcpy(data.data(), &MSGTYPE, sizeof(MESSAGE_TYPE_VAR));
+		memcpy(data.data() + sizeof(MESSAGE_TYPE_VAR), m_msgData.data(), m_msgData.size());
+		return data;
+	}
+
+	bool unpackData(void* pSrcData, void* pDestData, size_t numBytes) override
+	{
+		if (numBytes != m_msgData.size())
+		{
+			return false;
+		}
+
+		memcpy(pDestData, pSrcData, numBytes);
+
+		return true;
+	}
+
+public:
+	const string m_msgData = "SIGNUP";
+};
+
 class MsgUsernameRequest : public NetworkMessage
 {
 public:
@@ -230,6 +259,20 @@ public:
 class MsgCreateLine : public NetworkMessage
 {
 public:
+	MsgCreateLine() = default;
+	MsgCreateLine(Package data) {
+		unpackData(&m_msgData, data.data(), data.size());
+	};
+	MsgCreateLine(float iniPosX, float iniPosY, float finPosX, float finPosY, unsigned short colorID)
+	{
+		m_msgData.initialPosX = iniPosX;
+		m_msgData.initialPosY = iniPosY;
+		m_msgData.finalPosX = finPosX;
+		m_msgData.finalPosY = finPosX;
+		m_msgData.colorID = finPosX;
+	};
+	virtual ~MsgCreateLine() = default;
+
 	Package packData() override
 	{
 		MESSAGE_TYPE_VAR MSGTYPE = E::kCREATE_LINE;
@@ -264,6 +307,20 @@ public:
 class MsgCreateRectangle : public NetworkMessage
 {
 public:
+	MsgCreateRectangle() = default;
+	MsgCreateRectangle(Package data) {
+		unpackData(&m_msgData, data.data(), data.size());
+	};
+	MsgCreateRectangle(float iniPosX, float iniPosY, float finPosX, float finPosY, unsigned short colorID)
+	{
+		m_msgData.initialPosX = iniPosX;
+		m_msgData.initialPosY = iniPosY;
+		m_msgData.finalPosX = finPosX;
+		m_msgData.finalPosY = finPosX;
+		m_msgData.colorID = finPosX;
+	};
+	virtual ~MsgCreateRectangle() = default;
+
 	Package packData() override
 	{
 		MESSAGE_TYPE_VAR MSGTYPE = E::kCREATE_RECTANGLE;
@@ -298,6 +355,20 @@ public:
 class MsgCreateCircle : public NetworkMessage
 {
 public:
+	MsgCreateCircle() = default;
+	MsgCreateCircle(Package data) {
+		unpackData(&m_msgData, data.data(), data.size());
+	};
+	MsgCreateCircle(float iniPosX, float iniPosY, float finPosX, float finPosY, unsigned short colorID)
+	{
+		m_msgData.initialPosX = iniPosX;
+		m_msgData.initialPosY = iniPosY;
+		m_msgData.finalPosX = finPosX;
+		m_msgData.finalPosY = finPosX;
+		m_msgData.colorID = finPosX;
+	};
+	virtual ~MsgCreateCircle() = default;
+
 	Package packData() override
 	{
 		MESSAGE_TYPE_VAR MSGTYPE = E::kCREATE_CIRCLE;

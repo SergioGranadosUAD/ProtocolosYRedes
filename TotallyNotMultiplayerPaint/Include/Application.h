@@ -16,6 +16,7 @@ const int DEFAULT_WIDTH = 800;
 const int DEFAULT_HEIGHT = 600;
 
 using std::cout;
+using std::cin;
 using std::endl;
 using std::vector;
 

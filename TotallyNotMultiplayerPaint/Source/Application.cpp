@@ -7,6 +7,32 @@ Application::Application() :
 	m_MouseButtonDown(false) ,
 	m_SelectedColor(Color::White)
 {
+	/////////////////////
+	//	Placeholder
+	/////////////////////
+	string serverIP;
+	uint16 serverPort;
+	cout << "Introduzca la IP del servidor al que se desea conectar." << endl;
+	cin >> serverIP;
+	m_client.setServerIP(serverIP);
+	cout << "Introduzca el puerto del servidor al que se desea conectar." << endl;
+	cin >> serverPort;
+	m_client.setServerPort(serverPort);
+
+	MsgConnectRequest connectionRequest;
+	m_client.sendMessage(&connectionRequest, E::kLOGIN_REQUEST);
+
+	while (!m_client.isConnected())
+	{
+		uint16 msgType;
+		Package unpackedData;
+		m_client.waitForMessage();
+	}
+
+	/////////////////////
+	//	
+	/////////////////////
+
 	m_buttons[0].setPosition(50, 50);
 	m_buttons[0].setSize(20, 20);
 	m_buttons[0].setColor(Color::Red);

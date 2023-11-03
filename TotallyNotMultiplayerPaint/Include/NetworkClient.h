@@ -7,7 +7,7 @@ public:
 	NetworkClient();
 	virtual ~NetworkClient() = default;
 
-	void waitForMessage() override;
+	bool waitForMessage() override;
 	void sendMessage(NetworkMessage* message, E::NETWORK_MSG messageType) override;
 
 
@@ -21,6 +21,7 @@ public:
 
 	void setServerIP(string ip);
 	void setServerPort(unsigned short port);
+	inline bool isConnected() { return m_connected; };
 private:
 	optional<IpAddress> m_serverIP;
 	uint16 m_serverPort;
