@@ -308,10 +308,16 @@ void Application::handlePackage(Package unpackedData, uint16 msgType)
 	case E::kCREATE_FREEDRAW:
 	{
 		MsgCreateFreedraw m;
-		MsgCreateFreedraw::FreedrawData realData;
-		m.unpackData(&realData, unpackedData.data(), unpackedData.size());
+		MsgCreateFreedraw::FreedrawData realData = *(reinterpret_cast<MsgCreateFreedraw::FreedrawData*>(unpackedData.data()));
+		//m.unpackData(&realData, unpackedData.data(), unpackedData.size());
 
 		SHAPE_TYPE shpType = SHAPE_TYPE::FREEDRAW;
+
+		Drawing sentShape;
+		sentShape.CreateFreedraw(realData.pointPositions);
+		//sentShape.SetColor(static_cast<COLOR_TYPE>(realData.colorID));
+		m_ShapeList.push_back(sentShape);
+		std::cout << "Shape sync by server." << endl;
 
 		/*Drawing sentShape;
 		sentShape.CreateShape(Vector2f(realData.initialPosX, realData.initialPosY), shpType);
@@ -350,7 +356,9 @@ void Application::sendShape()
 	break;
 	case SHAPE_TYPE::FREEDRAW:
 	{
-		//MsgCreateFreedraw msg(startingPos.x, startingPos.y, finalPos.x, finalPos.y, colorID);
+		vector<float> vertexPositions = m_PreviewShape.getFreedrawPositions();
+		MsgCreateFreedraw msg(colorID, vertexPositions.size(), vertexPositions);
+		m_client.sendMessage(&msg, E::kCREATE_FREEDRAW);
 	}
 	break;
 	}

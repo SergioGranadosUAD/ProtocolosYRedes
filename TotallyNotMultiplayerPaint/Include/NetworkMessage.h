@@ -380,7 +380,8 @@ class MsgCreateCircle : public NetworkMessage
 {
 public:
 	MsgCreateCircle() = default;
-	MsgCreateCircle(Package data) {
+	MsgCreateCircle(Package data) 
+	{
 		unpackData(&m_msgData, data.data(), data.size());
 	};
 	MsgCreateCircle(float iniPosX, float iniPosY, float finPosX, float finPosY, unsigned short colorID)
@@ -429,6 +430,15 @@ public:
 class MsgCreateFreedraw : public NetworkMessage
 {
 public:
+	MsgCreateFreedraw() = default;
+	MsgCreateFreedraw(unsigned short color, unsigned int vSize, vector<float> vertexPositions)
+	{
+		m_msgData.colorID = color;
+		m_msgData.vectorSize = vSize;
+		m_msgData.pointPositions = vertexPositions;
+	};
+	~MsgCreateFreedraw() = default;
+
 	Package packData() override
 	{
 		MESSAGE_TYPE_VAR MSGTYPE = E::kCREATE_FREEDRAW;
@@ -441,12 +451,11 @@ public:
 
 	bool unpackData(void* pSrcData, void* pDestData, size_t numBytes) override
 	{
-		if (numBytes != sizeof(m_msgData))
+		/*if (numBytes != sizeof(m_msgData))
 		{
 			return false;
-		}
-		FreedrawData* test = reinterpret_cast<FreedrawData*>(pDestData);
-		pSrcData = &test;
+		}*/
+
 		//memcpy(pDestData, pSrcData, numBytes);
 		return true;
 	}
@@ -454,8 +463,8 @@ public:
 public:
 	struct FreedrawData
 	{
-		size_t vectorSize;
 		unsigned short colorID;
+		unsigned int vectorSize;
 		vector<float> pointPositions;
 	} m_msgData;
 };

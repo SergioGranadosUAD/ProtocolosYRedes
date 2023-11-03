@@ -438,7 +438,27 @@ void NetworkServer::handlePackage(Package& unpackedData, const uint16& msgType, 
 	break;
 	case E::kCREATE_FREEDRAW:
 	{
-		
+		MsgCreateFreedraw m;
+		MsgCreateFreedraw::FreedrawData realData;
+		//m.unpackData(&realData, unpackedData.data(), unpackedData.size());
+
+		memcpy(&realData.colorID, &unpackedData[0], sizeof(unsigned short));
+		memcpy(&realData.vectorSize, &unpackedData[sizeof(unsigned short)], sizeof(unsigned int));
+		realData.pointPositions.resize(realData.vectorSize);
+		memcpy(&realData.pointPositions, &unpackedData[sizeof(unsigned short) + sizeof(unsigned int)], sizeof(size_t));
+
+		cout << "Shape created by user." << endl;
+		E::NETWORK_MSG typeToSend = static_cast<E::NETWORK_MSG>(msgType);
+		MsgCreateFreedraw message(realData.colorID, realData.vectorSize, realData.pointPositions);
+		for (auto& client : m_userList)
+		{
+			if ((client.userIp.value() != messageSender.userIp.value() && client.userPort != messageSender.userPort) ||
+				(client.userIp.value() == messageSender.userIp.value() && client.userPort != messageSender.userPort))
+			{
+				cout << "Sending shape information to user " << client.userIp.value() << client.userPort << endl;
+				sendMessage(&message, typeToSend, client);
+			}
+		}
 	}
 	break;
 	default:

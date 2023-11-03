@@ -128,8 +128,25 @@ void Drawing::CreateShape(const Vector2f& startingPos, const SHAPE_TYPE& eShapeT
 	m_pBaseShape->setOutlineColor(sf::Color::Red);
 }
 
-void Drawing::CreateShape(const Vector2f& startingPos, const Vector2f& finalPos, const SHAPE_TYPE& eShapeType)
+void Drawing::CreateFreedraw(vector<float>& vertexPositions)
 {
+	m_pFreeLineShape = new VertexArray(sf::PrimitiveType::LineStrip, 0);
+	for (int i = 0; i < vertexPositions.size(); i += 2)
+	{
+		Vector2f position(vertexPositions[i], vertexPositions[i + 1]);
+		m_pFreeLineShape->append(position);
+	}
+}
+
+vector<float> Drawing::getFreedrawPositions()
+{
+	vector<float> vec;
+	for (int i = 0; i < m_pFreeLineShape->getVertexCount(); ++i)
+	{
+		vec.push_back((*m_pFreeLineShape)[i].position.x);
+		vec.push_back((*m_pFreeLineShape)[i].position.y);
+	}
+	return vec;
 }
 
 void Drawing::SetColor(Color setColor)

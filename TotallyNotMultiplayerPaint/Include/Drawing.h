@@ -2,6 +2,7 @@
 
 #include <SFML/Graphics.hpp>
 
+using std::vector;
 using sf::VertexArray;
 using sf::Shape;
 using sf::RectangleShape;
@@ -31,7 +32,7 @@ public:
 	void Clear();
 	void Reset();
 	void CreateShape(const Vector2f& startingPos, const SHAPE_TYPE& eShapeType);
-	void CreateShape(const Vector2f& startingPos, const Vector2f& finalPos, const SHAPE_TYPE& eShapeType);
+	void CreateFreedraw(vector<float>& vertexPositions);
 
 	inline Shape* GetShapePtr() { return m_pBaseShape; };
 	inline VertexArray* GetFreeDrawPtr() { return m_pFreeLineShape; };
@@ -39,6 +40,7 @@ public:
 	inline bool IsShapeCreated() { return m_ShapeCreated; };
 	inline Vector2f getStartingPos() { return m_StartingPosition; };
 	inline Vector2f getFinalPos() { return m_FinalPosition; };
+	vector<float> getFreedrawPositions();
 
 	void SetColor(Color setColor);
 private:
