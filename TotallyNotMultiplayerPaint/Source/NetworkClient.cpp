@@ -15,7 +15,7 @@ bool NetworkClient::waitForMessage()
 bool NetworkClient::waitForMessage(Package* messageData, uint16* messageType)
 {
 	Package incomingPackage;
-	incomingPackage.resize(2048);
+	incomingPackage.resize(8192);
 	size_t bytesReceived;
 	optional<IpAddress> sender;
 	uint16 senderPort;

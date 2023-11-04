@@ -311,8 +311,12 @@ void Application::handlePackage(Package unpackedData, uint16 msgType)
 	case E::kCREATE_FREEDRAW:
 	{
 		MsgCreateFreedraw m;
-		MsgCreateFreedraw::FreedrawData realData = *(reinterpret_cast<MsgCreateFreedraw::FreedrawData*>(unpackedData.data()));
-		//m.unpackData(&realData, unpackedData.data(), unpackedData.size());
+		MsgCreateFreedraw::FreedrawData realData;
+
+		memcpy(&realData.colorID, &unpackedData[0], sizeof(unsigned short));
+		memcpy(&realData.vectorSize, &unpackedData[sizeof(unsigned short)], sizeof(unsigned int));
+		realData.pointPositions.resize(realData.vectorSize);
+		memcpy(realData.pointPositions.data(), &unpackedData[sizeof(unsigned short) + sizeof(unsigned int)], sizeof(float)* realData.vectorSize);
 
 		SHAPE_TYPE shpType = SHAPE_TYPE::FREEDRAW;
 

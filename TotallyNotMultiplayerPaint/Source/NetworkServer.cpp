@@ -291,7 +291,23 @@ void NetworkServer::syncUser(PackageInformation& packageInfo, Client& messageSen
 		sendMessage(&message, typeToSend, messageSender);
 	}
 	break;
+	case E::kCREATE_FREEDRAW:
+	{
+		MsgCreateFreedraw m;
+		MsgCreateFreedraw::FreedrawData realData;
 
+		memcpy(&realData.colorID, &packageInfo.pack[0], sizeof(unsigned short));
+		memcpy(&realData.vectorSize, &packageInfo.pack[sizeof(unsigned short)], sizeof(unsigned int));
+		realData.pointPositions.resize(realData.vectorSize);
+		memcpy(realData.pointPositions.data(), &packageInfo.pack[sizeof(unsigned short) + sizeof(unsigned int)], sizeof(float) * realData.vectorSize);
+
+		cout << "Shape created by user." << endl;
+		E::NETWORK_MSG typeToSend = static_cast<E::NETWORK_MSG>(packageInfo.msgType);
+		MsgCreateFreedraw message(realData.colorID, realData.vectorSize, realData.pointPositions);
+
+		cout << "Sending shape information to user: " << messageSender.userIp.value() << messageSender.userPort << endl;
+		sendMessage(&message, typeToSend, messageSender);
+	}
 	}
 }
 
@@ -524,12 +540,11 @@ void NetworkServer::handlePackage(Package& unpackedData, const uint16& msgType, 
 
 		MsgCreateFreedraw m;
 		MsgCreateFreedraw::FreedrawData realData;
-		//m.unpackData(&realData, unpackedData.data(), unpackedData.size());
 
 		memcpy(&realData.colorID, &unpackedData[0], sizeof(unsigned short));
 		memcpy(&realData.vectorSize, &unpackedData[sizeof(unsigned short)], sizeof(unsigned int));
 		realData.pointPositions.resize(realData.vectorSize);
-		memcpy(realData.pointPositions.data(), &unpackedData[sizeof(unsigned short) + sizeof(unsigned int)], sizeof(size_t));
+		memcpy(realData.pointPositions.data(), &unpackedData[sizeof(unsigned short) + sizeof(unsigned int)], sizeof(float)* realData.vectorSize);
 
 		cout << "Shape created by user." << endl;
 		E::NETWORK_MSG typeToSend = static_cast<E::NETWORK_MSG>(msgType);
@@ -539,7 +554,7 @@ void NetworkServer::handlePackage(Package& unpackedData, const uint16& msgType, 
 			if ((client.userIp.value() != messageSender.userIp.value() && client.userPort != messageSender.userPort) ||
 				(client.userIp.value() == messageSender.userIp.value() && client.userPort != messageSender.userPort))
 			{
-				cout << "Sending shape information to user " << client.userIp.value() << client.userPort << endl;
+				cout << "Sending shape information to user: " << client.userIp.value() << client.userPort << endl;
 				sendMessage(&message, typeToSend, client);
 			}
 		}
