@@ -12,7 +12,7 @@ NetworkServer::NetworkServer() :
 bool NetworkServer::waitForMessage()
 {
 	Package incomingPackage;
-	incomingPackage.resize(2048);
+	incomingPackage.resize(8192);
 	size_t bytesReceived;
 	optional<IpAddress> sender;
 	uint16 senderPort;
@@ -232,7 +232,70 @@ bool NetworkServer::clientIsAlreadyConnecting(const Client& messageSender)
 	return false;
 }
 
-void NetworkServer::handlePackage(Package& unpackedData, const uint16& msgType, const Client& messageSender)
+void NetworkServer::syncUser(PackageInformation& packageInfo, Client& messageSender)
+{
+	switch (packageInfo.msgType)
+	{
+	case E::kCREATE_LINE:
+	{
+		MsgCreateLine m;
+		MsgCreateLine::LineData realData = *(reinterpret_cast<MsgCreateLine::LineData*>(packageInfo.pack.data()));
+		//m.unpackData(&realData, unpackedData.data(), unpackedData.size());
+
+		cout << "Shape created by user." << endl;
+		E::NETWORK_MSG typeToSend = static_cast<E::NETWORK_MSG>(packageInfo.msgType);
+
+		MsgCreateLine message(realData.initialPosX,
+			realData.initialPosY,
+			realData.finalPosX,
+			realData.finalPosY,
+			realData.colorID);
+
+		cout << "Sending shape information to user " << messageSender.userIp.value() << ":" << messageSender.userPort << endl;
+		sendMessage(&message, typeToSend, messageSender);
+	}
+	break;
+	case E::kCREATE_RECTANGLE:
+	{
+		MsgCreateRectangle m;
+		MsgCreateRectangle::RectangleData realData = *(reinterpret_cast<MsgCreateRectangle::RectangleData*>(packageInfo.pack.data()));
+		//m.unpackData(&realData, unpackedData.data(), unpackedData.size());
+
+		cout << "Shape created by user." << endl;
+		E::NETWORK_MSG typeToSend = static_cast<E::NETWORK_MSG>(packageInfo.msgType);
+		MsgCreateRectangle message(realData.initialPosX,
+			realData.initialPosY,
+			realData.finalPosX,
+			realData.finalPosY,
+			realData.colorID);
+		
+		cout << "Sending shape information to user " << messageSender.userIp.value() << ":" << messageSender.userPort << endl;
+		sendMessage(&message, typeToSend, messageSender);
+	}
+	break;
+	case E::kCREATE_CIRCLE:
+	{
+		MsgCreateCircle m;
+		MsgCreateCircle::CircleData realData = *(reinterpret_cast<MsgCreateCircle::CircleData*>(packageInfo.pack.data()));
+		//m.unpackData(&realData, unpackedData.data(), unpackedData.size());
+
+		cout << "Shape created by user." << endl;
+		E::NETWORK_MSG typeToSend = static_cast<E::NETWORK_MSG>(packageInfo.msgType);
+		MsgCreateCircle message(realData.initialPosX,
+			realData.initialPosY,
+			realData.finalPosX,
+			realData.finalPosY,
+			realData.colorID);
+		
+		cout << "Sending shape information to user " << messageSender.userIp.value() << ":" << messageSender.userPort << endl;
+		sendMessage(&message, typeToSend, messageSender);
+	}
+	break;
+
+	}
+}
+
+void NetworkServer::handlePackage(Package& unpackedData, const uint16& msgType, Client& messageSender)
 {
 	switch (msgType) {
 	case E::kLOGIN_REQUEST:
@@ -365,6 +428,11 @@ void NetworkServer::handlePackage(Package& unpackedData, const uint16& msgType, 
 	break;
 	case E::kCREATE_LINE:
 	{
+		PackageInformation dataToStore;
+		dataToStore.pack = unpackedData;
+		dataToStore.msgType = msgType;
+		m_boardSyncStorage.push_back(dataToStore);
+
 		MsgCreateLine m;
 		MsgCreateLine::LineData realData = *(reinterpret_cast<MsgCreateLine::LineData*>(unpackedData.data()));
 		//m.unpackData(&realData, unpackedData.data(), unpackedData.size());
@@ -390,6 +458,11 @@ void NetworkServer::handlePackage(Package& unpackedData, const uint16& msgType, 
 	break;
 	case E::kCREATE_RECTANGLE:
 	{
+		PackageInformation dataToStore;
+		dataToStore.pack = unpackedData;
+		dataToStore.msgType = msgType;
+		m_boardSyncStorage.push_back(dataToStore);
+
 		MsgCreateRectangle m;
 		MsgCreateRectangle::RectangleData realData = *(reinterpret_cast<MsgCreateRectangle::RectangleData*>(unpackedData.data()));
 		//m.unpackData(&realData, unpackedData.data(), unpackedData.size());
@@ -414,11 +487,17 @@ void NetworkServer::handlePackage(Package& unpackedData, const uint16& msgType, 
 	break;
 	case E::kCREATE_CIRCLE:
 	{
+		PackageInformation dataToStore;
+		dataToStore.pack = unpackedData;
+		dataToStore.msgType = msgType;
+		m_boardSyncStorage.push_back(dataToStore);
+
 		MsgCreateCircle m;
 		MsgCreateCircle::CircleData realData = *(reinterpret_cast<MsgCreateCircle::CircleData*>(unpackedData.data()));
 		//m.unpackData(&realData, unpackedData.data(), unpackedData.size());
 
 		cout << "Shape created by user." << endl;
+
 		E::NETWORK_MSG typeToSend = static_cast<E::NETWORK_MSG>(msgType);
 		MsgCreateCircle message(realData.initialPosX,
 			realData.initialPosY,
@@ -438,6 +517,11 @@ void NetworkServer::handlePackage(Package& unpackedData, const uint16& msgType, 
 	break;
 	case E::kCREATE_FREEDRAW:
 	{
+		PackageInformation dataToStore;
+		dataToStore.pack = unpackedData;
+		dataToStore.msgType = msgType;
+		m_boardSyncStorage.push_back(dataToStore);
+
 		MsgCreateFreedraw m;
 		MsgCreateFreedraw::FreedrawData realData;
 		//m.unpackData(&realData, unpackedData.data(), unpackedData.size());
@@ -445,7 +529,7 @@ void NetworkServer::handlePackage(Package& unpackedData, const uint16& msgType, 
 		memcpy(&realData.colorID, &unpackedData[0], sizeof(unsigned short));
 		memcpy(&realData.vectorSize, &unpackedData[sizeof(unsigned short)], sizeof(unsigned int));
 		realData.pointPositions.resize(realData.vectorSize);
-		memcpy(&realData.pointPositions, &unpackedData[sizeof(unsigned short) + sizeof(unsigned int)], sizeof(size_t));
+		memcpy(realData.pointPositions.data(), &unpackedData[sizeof(unsigned short) + sizeof(unsigned int)], sizeof(size_t));
 
 		cout << "Shape created by user." << endl;
 		E::NETWORK_MSG typeToSend = static_cast<E::NETWORK_MSG>(msgType);
@@ -458,6 +542,15 @@ void NetworkServer::handlePackage(Package& unpackedData, const uint16& msgType, 
 				cout << "Sending shape information to user " << client.userIp.value() << client.userPort << endl;
 				sendMessage(&message, typeToSend, client);
 			}
+		}
+	}
+	break;
+	case E::kSYNC_USER:
+	{
+		for (auto& package : m_boardSyncStorage)
+		{
+			cout << "Syncing user" << endl;
+			syncUser(package, messageSender);
 		}
 	}
 	break;

@@ -443,9 +443,14 @@ public:
 	{
 		MESSAGE_TYPE_VAR MSGTYPE = E::kCREATE_FREEDRAW;
 		Package data;
-		data.resize(sizeof(m_msgData) + sizeof(MESSAGE_TYPE_VAR));
+		size_t dataSize = sizeof(m_msgData.colorID) + sizeof(m_msgData.vectorSize) + (sizeof(float)* m_msgData.vectorSize);
+
+		data.resize(dataSize + sizeof(MESSAGE_TYPE_VAR));
 		memcpy(data.data(), &MSGTYPE, sizeof(MESSAGE_TYPE_VAR));
-		memcpy(data.data() + sizeof(MESSAGE_TYPE_VAR), &m_msgData, sizeof(m_msgData));
+		memcpy(data.data() + sizeof(MESSAGE_TYPE_VAR), &m_msgData.colorID, sizeof(m_msgData.colorID));
+		memcpy(data.data() + sizeof(MESSAGE_TYPE_VAR) + sizeof(m_msgData.colorID), &m_msgData.vectorSize, sizeof(m_msgData.vectorSize));
+		memcpy(data.data() + sizeof(MESSAGE_TYPE_VAR) + sizeof(m_msgData.colorID) + sizeof(m_msgData.vectorSize),
+		m_msgData.pointPositions.data(), sizeof(float) * m_msgData.vectorSize);
 		return data;
 	}
 
@@ -467,4 +472,32 @@ public:
 		unsigned int vectorSize;
 		vector<float> pointPositions;
 	} m_msgData;
+};
+
+class MsgSyncUser : public NetworkMessage
+{
+public:
+	Package packData() override
+	{
+		MESSAGE_TYPE_VAR MSGTYPE = E::kSYNC_USER;
+		Package data;
+		data.resize(m_msgData.size() + sizeof(MESSAGE_TYPE_VAR));
+		memcpy(data.data(), &MSGTYPE, sizeof(MESSAGE_TYPE_VAR));
+		memcpy(data.data() + sizeof(MESSAGE_TYPE_VAR), m_msgData.data(), m_msgData.size());
+		return data;
+	}
+
+	bool unpackData(void* pSrcData, void* pDestData, size_t numBytes) override
+	{
+		if (numBytes != m_msgData.size())
+		{
+			return false;
+		}
+
+		memcpy(pDestData, pSrcData, numBytes);
+		return true;
+	}
+
+public:
+	string m_msgData = "SYNCING";
 };

@@ -8,7 +8,8 @@ using std::unordered_map;
 using std::cout;
 using std::endl;
 
-struct UnconnectedClient {
+struct UnconnectedClient 
+{
 	optional<IpAddress> userIp;
 	uint16 userPort;
 	string userName;
@@ -16,9 +17,16 @@ struct UnconnectedClient {
 	bool creatingAccount;
 };
 
-struct Client {
+struct Client 
+{
 	optional<IpAddress> userIp;
 	uint16 userPort;
+};
+
+struct PackageInformation 
+{
+	Package pack;
+	uint16 msgType;
 };
 
 class NetworkServer : public NetworkRole
@@ -39,14 +47,16 @@ public:
 	bool isPackageValid(const Package& pack, Package* pOutPackage = nullptr, uint16* pOutDataSize = nullptr) override;
 	bool getPackageTypeAndData(const Package& pack, uint16& msgType, Package& unpackedData) override;
 
-	void handlePackage(Package& unpackedData, const uint16& msgType, const Client& messageSender);
+	void handlePackage(Package& unpackedData, const uint16& msgType, Client& messageSender);
 	bool clientIsAlreadyConnecting(const Client& messageSender);
+	void syncUser(PackageInformation& packageInfo, Client& messageSender);
 
 	inline bool isRunning() { return m_isRunning; };
 
 private:
 	vector<Client> m_userList;
 	vector<UnconnectedClient> m_incomingClients;
+	vector<PackageInformation> m_boardSyncStorage;
 	unordered_map<string, string> m_registeredUsers;
 	bool m_isRunning;
 

@@ -242,6 +242,9 @@ void Application::handlePackage(Package unpackedData, uint16 msgType)
 		m.unpackData(&realData, unpackedData.data(), unpackedData.size());
 		std::cout << "[SERVER] " << realData << endl;
 
+		MsgSyncUser message;
+		m_client.sendMessage(&message, E::kSYNC_USER);
+
 		m_client.setConnection(true);
 	}
 	break;

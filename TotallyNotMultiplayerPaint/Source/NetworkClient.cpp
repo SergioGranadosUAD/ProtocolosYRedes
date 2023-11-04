@@ -118,6 +118,12 @@ void NetworkClient::sendMessage(NetworkMessage* message, E::NETWORK_MSG messageT
 		connectData = msgObject->packData();
 	}
 		break;
+	case E::kSYNC_USER:
+	{
+		MsgSyncUser* msgObject = reinterpret_cast<MsgSyncUser*>(message);
+		connectData = msgObject->packData();
+	}
+		break;
 	}
 	Package finalPackage = getPackage(connectData.data(), connectData.size());
 
