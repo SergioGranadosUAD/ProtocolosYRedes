@@ -54,7 +54,7 @@ private:
 	Drawing m_PreviewShape;
 	bool m_MouseButtonDown;
 	Vector2f m_InitialMousePosition;
-	Button m_buttons[4];
+	Button m_buttons[8];
 	Color m_SelectedColor;
 	NetworkClient m_client;
 

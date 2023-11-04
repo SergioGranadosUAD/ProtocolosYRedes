@@ -72,13 +72,26 @@ Application::Application() :
 	m_buttons[3].setSize(20, 20);
 	m_buttons[3].setColor(Color::White);
 
+	m_buttons[4].setPosition(20, 450);
+	m_buttons[4].setSize(50, 50);
+	m_buttons[4].setColor(Color::White);
+
+	m_buttons[5].setPosition(80, 450);
+	m_buttons[5].setSize(50, 50);
+	m_buttons[5].setColor(Color::White);
+
+	m_buttons[6].setPosition(20, 510);
+	m_buttons[6].setSize(50, 50);
+	m_buttons[6].setColor(Color::White);
+
+	m_buttons[7].setPosition(80, 510);
+	m_buttons[7].setSize(50, 50);
+	m_buttons[7].setColor(Color::White);
+
+
 	m_buttons[0].setButtonAction([this]()
 		{
 			setSelectedColor(Color::Red);
-
-			//Prueba para ver la estructura de mensajes. ELIMINAR.
-			MsgConnectRequest* msg = new MsgConnectRequest();
-			m_client.sendMessage(msg, E::kLOGIN_REQUEST);
 		});
 	m_buttons[1].setButtonAction([this]()
 		{
@@ -91,6 +104,26 @@ Application::Application() :
 	m_buttons[3].setButtonAction([this]()
 		{
 			setSelectedColor(Color::White);
+		});
+
+	m_buttons[4].setButtonAction([this]()
+		{
+			m_ActualShape = SHAPE_TYPE::LINE;
+		});
+
+	m_buttons[5].setButtonAction([this]()
+		{
+			m_ActualShape = SHAPE_TYPE::RECTANGLE;
+		});
+
+	m_buttons[6].setButtonAction([this]()
+		{
+			m_ActualShape = SHAPE_TYPE::CIRCLE;
+		});
+
+	m_buttons[7].setButtonAction([this]()
+		{
+			m_ActualShape = SHAPE_TYPE::FREEDRAW;
 		});
 }
 
@@ -119,19 +152,7 @@ void Application::HandleInput()
 			m_Window.close();
 			break;
 		case Event::KeyPressed:
-			if (keyboardEvent.key.code == sf::Keyboard::Num1) {
-				m_ActualShape = SHAPE_TYPE::LINE;
-			}
-			else if (keyboardEvent.key.code == sf::Keyboard::Num2) {
-				m_ActualShape = SHAPE_TYPE::RECTANGLE;
-			}
-			else if (keyboardEvent.key.code == sf::Keyboard::Num3) {
-				m_ActualShape = SHAPE_TYPE::CIRCLE;
-			}
-			else if (keyboardEvent.key.code == sf::Keyboard::Num4) {
-				m_ActualShape = SHAPE_TYPE::FREEDRAW;
-			}
-			else if (keyboardEvent.key.code == sf::Keyboard::Escape && m_MouseButtonDown) {
+			if (keyboardEvent.key.code == sf::Keyboard::Escape && m_MouseButtonDown) {
 				m_MouseButtonDown = false;
 				m_PreviewShape.Clear();
 			}
