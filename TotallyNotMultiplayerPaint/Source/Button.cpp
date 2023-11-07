@@ -1,14 +1,16 @@
 #include "../Include/Button.h"
 
-Button::Button(float posX, float posY, float width, float height)
+Button::Button() :
+	m_drawableShape(m_shapeTexture)
 {
-	m_drawableShape.setPosition(Vector2f(posX, posY));
-	m_drawableShape.setSize(Vector2f(width, height));
+
 }
 
-Button::~Button()
+Button::Button(const float& posX, const float& posY, const float& width, const float& height, const Texture& texture):
+	m_drawableShape(texture)
 {
-
+	m_drawableShape.setPosition(Vector2f(posX, posY));
+	m_drawableShape.setScale(Vector2f(width, height));
 }
 
 void Button::render(RenderWindow& window)
@@ -16,10 +18,10 @@ void Button::render(RenderWindow& window)
 	window.draw(m_drawableShape);
 }
 
-void Button::setSize(float width, float height)
+void Button::setScale(float width, float height)
 {
 	Vector2f size(width, height);
-	m_drawableShape.setSize(size);
+	m_drawableShape.setScale(size);
 }
 
 void Button::setPosition(float posX, float posY)
@@ -30,7 +32,19 @@ void Button::setPosition(float posX, float posY)
 
 void Button::setColor(const Color& color)
 {
-	m_drawableShape.setFillColor(color);
+	m_drawableShape.setColor(color);
+}
+
+void Button::setTexture(const Texture& pTexture)
+{
+	m_drawableShape.setTexture(pTexture);
+}
+
+void Button::setTextureRect(int posX, int posY, int width, int height)
+{
+	Vector2i position(posX, posY);
+	Vector2i size(width, height);
+	m_drawableShape.setTextureRect(IntRect(position, size));
 }
 
 bool Button::isInBounds(const Vector2f& mousePos)

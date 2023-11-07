@@ -136,6 +136,8 @@ void Drawing::CreateFreedraw(vector<float>& vertexPositions)
 		Vector2f position(vertexPositions[i], vertexPositions[i + 1]);
 		m_pFreeLineShape->append(position);
 	}
+
+	m_ShapeType = SHAPE_TYPE::FREEDRAW;
 }
 
 vector<float> Drawing::getFreedrawPositions()
@@ -149,8 +151,40 @@ vector<float> Drawing::getFreedrawPositions()
 	return vec;
 }
 
-void Drawing::SetColor(Color setColor)
+void Drawing::SetColor(unsigned int colorID)
 {
+	m_colorID = colorID;
+	Color setColor;
+	switch (colorID)
+	{
+	case SHAPE_COLOR::BLACK:
+		setColor = Color::Black;
+		break;
+	case SHAPE_COLOR::WHITE:
+		setColor = Color::White;
+		break;
+	case SHAPE_COLOR::RED:
+		setColor = Color::Red;
+		break;
+	case SHAPE_COLOR::GREEN:
+		setColor = Color::Green;
+		break;
+	case SHAPE_COLOR::BLUE:
+		setColor = Color::Blue;
+		break;
+	case SHAPE_COLOR::YELLOW:
+		setColor = Color::Yellow;
+		break;
+	case SHAPE_COLOR::MAGENTA:
+		setColor = Color::Magenta;
+		break;
+	case SHAPE_COLOR::CYAN:
+		setColor = Color::Cyan;
+		break;
+	default:
+		setColor = Color::Black;
+	}
+
 	if (m_ShapeType == SHAPE_TYPE::FREEDRAW) 
 	{
 		size_t vertexCount = m_pFreeLineShape->getVertexCount() - 1;

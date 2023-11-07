@@ -3,8 +3,11 @@
 #include <functional>
 #include "SFML/Graphics.hpp"
 
-using sf::RectangleShape;
+using sf::Sprite;
+using sf::IntRect;
+using sf::Texture;
 using sf::Vector2f;
+using sf::Vector2i;
 using sf::RenderWindow;
 using std::function;
 using sf::FloatRect;
@@ -12,15 +15,17 @@ using sf::Color;
 
 class Button {
 public:
-	Button() = default;
-	Button(float posX, float posY, float width, float height);
-	virtual ~Button();
+	Button();
+	Button(const float& posX, const float& posY, const float& width, const float& height, const Texture& texture);
+	virtual ~Button() = default;
 
 	void render(RenderWindow& window);
 
-	void setSize(float width, float height);
+	void setScale(float width, float height);
 	void setPosition(float posX, float posY);
 	void setColor(const Color& color);
+	void setTexture(const Texture& pTexture);
+	void setTextureRect(int posX,int posY, int width, int height);
 
 	bool isInBounds(const Vector2f& mousePos);
 
@@ -28,7 +33,9 @@ public:
 	void onClick();
 
 private:
-	RectangleShape m_drawableShape;
+
+	Sprite m_drawableShape;
+	Texture m_shapeTexture;
 	function<void()> m_buttonFunction;
 	//bool m_hovered;
 };

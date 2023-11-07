@@ -5,7 +5,7 @@ Application::Application() :
 	m_ActualShape(SHAPE_TYPE::LINE),
 	m_PreviewShape(),
 	m_MouseButtonDown(false) ,
-	m_SelectedColor(Color::White)
+	m_SelectedColor(SHAPE_COLOR::WHITE)
 {
 	/////////////////////
 	//	Placeholder
@@ -56,75 +56,8 @@ Application::Application() :
 	//	
 	/////////////////////
 
-	m_buttons[0].setPosition(50, 50);
-	m_buttons[0].setSize(20, 20);
-	m_buttons[0].setColor(Color::Red);
-
-	m_buttons[1].setPosition(70, 50);
-	m_buttons[1].setSize(20, 20);
-	m_buttons[1].setColor(Color::Green);
-
-	m_buttons[2].setPosition(50, 70);
-	m_buttons[2].setSize(20, 20);
-	m_buttons[2].setColor(Color::Blue);
-
-	m_buttons[3].setPosition(70, 70);
-	m_buttons[3].setSize(20, 20);
-	m_buttons[3].setColor(Color::White);
-
-	m_buttons[4].setPosition(20, 450);
-	m_buttons[4].setSize(50, 50);
-	m_buttons[4].setColor(Color::White);
-
-	m_buttons[5].setPosition(80, 450);
-	m_buttons[5].setSize(50, 50);
-	m_buttons[5].setColor(Color::White);
-
-	m_buttons[6].setPosition(20, 510);
-	m_buttons[6].setSize(50, 50);
-	m_buttons[6].setColor(Color::White);
-
-	m_buttons[7].setPosition(80, 510);
-	m_buttons[7].setSize(50, 50);
-	m_buttons[7].setColor(Color::White);
-
-
-	m_buttons[0].setButtonAction([this]()
-		{
-			setSelectedColor(Color::Red);
-		});
-	m_buttons[1].setButtonAction([this]()
-		{
-			setSelectedColor(Color::Green);
-		});
-	m_buttons[2].setButtonAction([this]()
-		{
-			setSelectedColor(Color::Blue);
-		});
-	m_buttons[3].setButtonAction([this]()
-		{
-			setSelectedColor(Color::White);
-		});
-
-	m_buttons[4].setButtonAction([this]()
-		{
-			m_ActualShape = SHAPE_TYPE::LINE;
-		});
-
-	m_buttons[5].setButtonAction([this]()
-		{
-			m_ActualShape = SHAPE_TYPE::RECTANGLE;
-		});
-
-	m_buttons[6].setButtonAction([this]()
-		{
-			m_ActualShape = SHAPE_TYPE::CIRCLE;
-		});
-
-	m_buttons[7].setButtonAction([this]()
-		{
-			m_ActualShape = SHAPE_TYPE::FREEDRAW;
-		});
+	m_buttonsTexture.loadFromFile("Resources/buttons.png");
+	initButtons();
 }
 
 Application::Application(int windowWidth, int windowHeight):
@@ -140,6 +73,109 @@ Application::~Application()
 {
 	MsgDisconnected msg;
 	m_client.sendMessage(&msg, E::kDISCONNECTION);
+}
+
+void Application::initButtons()
+{
+	for (int i = 0; i < BUTTON_COUNT; ++i) {
+		m_buttons[i].setTexture(m_buttonsTexture);
+	}
+
+	//Color buttons
+	m_buttons[0].setPosition(50, 50);
+	m_buttons[0].setTextureRect(100, 0, 20, 20);
+
+	m_buttons[1].setPosition(70, 50);
+	m_buttons[1].setTextureRect(120, 0, 20, 20);
+
+	m_buttons[2].setPosition(50, 70);
+	m_buttons[2].setTextureRect(100, 20, 20, 20);
+
+	m_buttons[3].setPosition(70, 70);
+	m_buttons[3].setTextureRect(120, 20, 20, 20);
+
+	m_buttons[4].setPosition(50, 90);
+	m_buttons[4].setTextureRect(100, 40, 20, 20);
+
+	m_buttons[5].setPosition(70, 90);
+	m_buttons[5].setTextureRect(120, 40, 20, 20);
+
+	m_buttons[6].setPosition(50, 110);
+	m_buttons[6].setTextureRect(100, 60, 20, 20);
+
+	m_buttons[7].setPosition(70, 110);
+	m_buttons[7].setTextureRect(120, 60, 20, 20);
+
+	//Shape buttons
+	m_buttons[8].setPosition(20, 450);
+	m_buttons[8].setTextureRect(0, 0, 50, 50);
+
+	m_buttons[9].setPosition(80, 450);
+	m_buttons[9].setTextureRect(50, 0, 50, 50);
+
+	m_buttons[10].setPosition(20, 510);
+	m_buttons[10].setTextureRect(0, 50, 50, 50);
+
+	m_buttons[11].setPosition(80, 510);
+	m_buttons[11].setTextureRect(50, 50, 50, 50);
+
+
+	m_buttons[0].setButtonAction([this]()
+		{
+			setSelectedColor(SHAPE_COLOR::BLACK);
+		});
+	m_buttons[1].setButtonAction([this]()
+		{
+			setSelectedColor(SHAPE_COLOR::WHITE);
+		});
+	m_buttons[2].setButtonAction([this]()
+		{
+			setSelectedColor(SHAPE_COLOR::RED);
+		});
+	m_buttons[3].setButtonAction([this]()
+		{
+			setSelectedColor(SHAPE_COLOR::GREEN);
+		});
+
+	m_buttons[4].setButtonAction([this]()
+		{
+			setSelectedColor(SHAPE_COLOR::BLUE);
+		});
+
+	m_buttons[5].setButtonAction([this]()
+		{
+			setSelectedColor(SHAPE_COLOR::YELLOW);
+		});
+
+	m_buttons[6].setButtonAction([this]()
+		{
+			setSelectedColor(SHAPE_COLOR::MAGENTA);
+		});
+
+	m_buttons[7].setButtonAction([this]()
+		{
+			setSelectedColor(SHAPE_COLOR::CYAN);
+		});
+
+	m_buttons[8].setButtonAction([this]()
+		{
+			m_ActualShape = SHAPE_TYPE::LINE;
+		});
+
+	m_buttons[9].setButtonAction([this]()
+		{
+			m_ActualShape = SHAPE_TYPE::RECTANGLE;
+		});
+
+	m_buttons[10].setButtonAction([this]()
+		{
+			m_ActualShape = SHAPE_TYPE::CIRCLE;
+		});
+
+	m_buttons[11].setButtonAction([this]()
+		{
+			m_ActualShape = SHAPE_TYPE::FREEDRAW;
+		});
 }
 
 void Application::HandleInput() 
@@ -158,7 +194,7 @@ void Application::HandleInput()
 			}
 			break;
 		case Event::MouseButtonPressed:
-			for (int i = 0; i < 4; ++i) {
+			for (int i = 0; i < BUTTON_COUNT; ++i) {
 				if (m_buttons[i].isInBounds(GetMousePosition())) {
 					m_buttons[i].onClick();
 					return;
@@ -217,7 +253,7 @@ void Application::Render() {
 	m_Window.display();
 }
 
-void Application::setSelectedColor(Color setColor)
+void Application::setSelectedColor(SHAPE_COLOR setColor)
 {
 	m_SelectedColor = setColor;
 }
@@ -282,14 +318,13 @@ void Application::handlePackage(Package unpackedData, uint16 msgType)
 	{
 		MsgCreateLine m;
 		MsgCreateLine::LineData realData = *(reinterpret_cast<MsgCreateLine::LineData*>(unpackedData.data()));
-		//m.unpackData(&realData, unpackedData.data(), unpackedData.size());
 
 		SHAPE_TYPE shpType = SHAPE_TYPE::LINE;
 
 		Drawing sentShape;
 		sentShape.CreateShape(Vector2f(realData.initialPosX, realData.initialPosY), shpType);
 		sentShape.Update(Vector2f(realData.finalPosX, realData.finalPosY));
-		//sentShape.SetColor(static_cast<COLOR_TYPE>(realData.colorID));
+		sentShape.SetColor(realData.colorID);
 		m_ShapeList.push_back(sentShape);
 
 		std::cout << "Shape sync by server." << endl;
@@ -299,14 +334,13 @@ void Application::handlePackage(Package unpackedData, uint16 msgType)
 	{
 		MsgCreateRectangle m;
 		MsgCreateRectangle::RectangleData realData = *(reinterpret_cast<MsgCreateRectangle::RectangleData*>(unpackedData.data()));
-		//m.unpackData(&realData, unpackedData.data(), unpackedData.size());
 
 		SHAPE_TYPE shpType = SHAPE_TYPE::RECTANGLE;
 
 		Drawing sentShape;
 		sentShape.CreateShape(Vector2f(realData.initialPosX, realData.initialPosY), shpType);
 		sentShape.Update(Vector2f(realData.finalPosX, realData.finalPosY));
-		//sentShape.SetColor(static_cast<COLOR_TYPE>(realData.colorID));
+		sentShape.SetColor(realData.colorID);
 		m_ShapeList.push_back(sentShape);
 
 		std::cout << "Shape sync by server." << endl;
@@ -316,14 +350,13 @@ void Application::handlePackage(Package unpackedData, uint16 msgType)
 	{
 		MsgCreateCircle m;
 		MsgCreateCircle::CircleData realData = *(reinterpret_cast<MsgCreateCircle::CircleData*>(unpackedData.data()));
-		//m.unpackData(&realData, unpackedData.data(), unpackedData.size());
 
 		SHAPE_TYPE shpType = SHAPE_TYPE::CIRCLE;
 
 		Drawing sentShape;
 		sentShape.CreateShape(Vector2f(realData.initialPosX, realData.initialPosY), shpType);
 		sentShape.Update(Vector2f(realData.finalPosX, realData.finalPosY));
-		//sentShape.SetColor(static_cast<COLOR_TYPE>(realData.colorID));
+		sentShape.SetColor(realData.colorID);
 		m_ShapeList.push_back(sentShape);
 
 		std::cout << "Shape sync by server." << endl;
@@ -343,15 +376,9 @@ void Application::handlePackage(Package unpackedData, uint16 msgType)
 
 		Drawing sentShape;
 		sentShape.CreateFreedraw(realData.pointPositions);
-		//sentShape.SetColor(static_cast<COLOR_TYPE>(realData.colorID));
+		sentShape.SetColor(realData.colorID);
 		m_ShapeList.push_back(sentShape);
 		std::cout << "Shape sync by server." << endl;
-
-		/*Drawing sentShape;
-		sentShape.CreateShape(Vector2f(realData.initialPosX, realData.initialPosY), shpType);
-		sentShape.Update(Vector2f(realData.finalPosX, realData.finalPosY));
-		//sentShape.SetColor(static_cast<COLOR_TYPE>(realData.colorID));
-		m_ShapeList.push_back(sentShape);*/
 	}
 	break;
 	}
@@ -361,7 +388,7 @@ void Application::sendShape()
 {
 	Vector2f startingPos = m_PreviewShape.getStartingPos();
 	Vector2f finalPos = m_PreviewShape.getFinalPos();
-	unsigned short colorID = 0;
+	uint16 colorID = m_PreviewShape.getColorID();
 	switch (m_ActualShape)
 	{
 	case SHAPE_TYPE::LINE:

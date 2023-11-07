@@ -31,6 +31,9 @@
     <Filter Include="Archivos de origen\Networking\Messages">
       <UniqueIdentifier>{edadbfd2-bc15-43c7-906c-eeda2ab7a7cc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Archivos de recursos\UI">
+      <UniqueIdentifier>{f48261ae-6468-411b-8e6c-5c7ba6a5fa63}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\NetworkRole.h">
@@ -80,5 +83,10 @@
     <ClCompile Include="Source\NetworkServer.cpp">
       <Filter>Archivos de origen\Networking</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Resources\buttons.png">
+      <Filter>Archivos de recursos\UI</Filter>
+    </Image>
   </ItemGroup>
 </Project>

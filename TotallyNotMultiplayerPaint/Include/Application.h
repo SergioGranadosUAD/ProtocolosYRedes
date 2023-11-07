@@ -9,11 +9,10 @@
 #include "NetworkClient.h"
 #include "NetworkMessage.h"
 
-
-
 const int BITS_PER_PIXEL = 32;
 const int DEFAULT_WIDTH = 800;
 const int DEFAULT_HEIGHT = 600;
+const int BUTTON_COUNT = 12;
 
 using std::cout;
 using std::cin;
@@ -39,6 +38,8 @@ public:
 	Application(int windowWidth, int windowHeight);
 	virtual ~Application();
 
+	void initButtons();
+
 	void HandleInput();
 	void Update();
 	void Render();
@@ -54,10 +55,12 @@ private:
 	Drawing m_PreviewShape;
 	bool m_MouseButtonDown;
 	Vector2f m_InitialMousePosition;
-	Button m_buttons[8];
-	Color m_SelectedColor;
+	uint16 m_SelectedColor;
 	NetworkClient m_client;
 
-	void setSelectedColor(Color setColor);
+	Button m_buttons[BUTTON_COUNT];
+	Texture m_buttonsTexture;
+
+	void setSelectedColor(SHAPE_COLOR setColor);
 	Vector2f GetMousePosition() { return m_Window.mapPixelToCoords(sf::Mouse::getPosition(m_Window)); };
 };

@@ -159,6 +159,9 @@
     <ClCompile Include="Source\NetworkMessage.cpp" />
     <ClCompile Include="Source\NetworkServer.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="Resources\buttons.png" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
