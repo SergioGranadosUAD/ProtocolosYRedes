@@ -336,7 +336,7 @@ void NetworkServer::handlePackage(Package& unpackedData, const uint16& msgType, 
 	break;
 	case E::kSIGNUP_REQUEST:
 	{
-		std::cout << "Un usuario se esta conectando..." << endl;
+		std::cout << "Un usuario se esta registrando..." << endl;
 
 		if (clientIsAlreadyConnecting(messageSender))
 		{
@@ -393,40 +393,76 @@ void NetworkServer::handlePackage(Package& unpackedData, const uint16& msgType, 
 
 
 		bool isCreatingAccount = clientReference.creatingAccount;
+		bool usernameFound = false;
+		bool passwordFound = false;
+
+		if (m_registeredUsers.empty() && !isCreatingAccount)
+		{
+			cout << "No hay usuarios registrados" << endl;
+			MsgDisconnected message;
+			sendMessage(&message, E::kDISCONNECTION, messageSender);
+			return;
+		}
 
 		for (auto dict : m_registeredUsers)
 		{
-			if (dict.first == clientReference.userName && dict.second == clientReference.userPass)
+			if (dict.first == clientReference.userName)
 			{
-				if (!isCreatingAccount)
-				{
-					Client newClient;
-					newClient.userIp = clientReference.userIp;
-					newClient.userPort = clientReference.userPort;
-					m_userList.push_back(newClient);
-
-					MsgConnected message;
-					sendMessage(&message, E::kCONNECTION_SUCCESSFUL, messageSender);
-				}
-				else
-				{
-					MsgDisconnected message;
-					sendMessage(&message, E::kDISCONNECTION, messageSender);
-				}
-				return;
+				usernameFound = true;
+			}
+			if (dict.second == clientReference.userPass)
+			{
+				passwordFound = true;
 			}
 		}
 
-		m_registeredUsers.insert({ clientReference.userName, clientReference.userPass });
-		Client newClient;
-		newClient.userIp = clientReference.userIp;
-		newClient.userPort = clientReference.userPort;
-		m_userList.push_back(newClient);
+		//Solicitud de registro, usuario duplicado
+		if (usernameFound && isCreatingAccount)
+		{
+			cout << "Usuario con el mismo nombre detectado" << endl;
+			MsgDisconnected message;
+			sendMessage(&message, E::kDISCONNECTION, messageSender);
+			return;
+		}
+		//Solicitud de registro, no se encontró el nombre de usuario.
+		if (!usernameFound && isCreatingAccount)
+		{
+			cout << "Registro exitoso" << endl;
+			m_registeredUsers.insert({ clientReference.userName, clientReference.userPass });
+			Client newClient;
+			newClient.userIp = clientReference.userIp;
+			newClient.userPort = clientReference.userPort;
+			m_userList.push_back(newClient);
 
-		MsgConnected message;
-		sendMessage(&message, E::kCONNECTION_SUCCESSFUL, messageSender);
+			MsgConnected message;
+			sendMessage(&message, E::kCONNECTION_SUCCESSFUL, messageSender);
+			cout << "Usuario conectado:" << newClient.userIp.value() << ":" << newClient.userPort << endl;
+			return;
+		}
 
-		cout << "Usuario conectado:" << newClient.userIp.value() << ":" << newClient.userPort << endl;
+		//Solicitud de inicio de sesión, No coinciden usuario y contraseña
+		if ((!usernameFound || !passwordFound) && !isCreatingAccount)
+		{
+			cout << "No se encontro el usuario o la password" << endl;
+			MsgDisconnected message;
+			sendMessage(&message, E::kDISCONNECTION, messageSender);
+			return;
+		}
+
+		//Solicitud de inicio de sesión, usuario y contraseña coinciden.
+		if (usernameFound && passwordFound && !isCreatingAccount)
+		{
+			cout << "Inicio de sesion exitoso" << endl;
+			Client newClient;
+			newClient.userIp = clientReference.userIp;
+			newClient.userPort = clientReference.userPort;
+			m_userList.push_back(newClient);
+
+			MsgConnected message;
+			sendMessage(&message, E::kCONNECTION_SUCCESSFUL, messageSender);
+			cout << "Usuario conectado:" << newClient.userIp.value() << ":" << newClient.userPort << endl;
+			return;
+		}
 	}
 	break;
 	case E::kDISCONNECTION:

@@ -26,19 +26,24 @@ Application::Application() :
 	if (connectionMode == "l")
 	{
 		connectionType = E::kLOGIN_REQUEST;
+		MsgConnectRequest connectionRequest;
+		m_client.sendMessage(&connectionRequest, connectionType);
 	}
 	else if(connectionMode == "r")
 	{
 		connectionType = E::kSIGNUP_REQUEST;
+		MsgSignupRequest connectionRequest;
+		m_client.sendMessage(&connectionRequest, connectionType);
 	}
 	else
 	{
 		connectionType = E::kLOGIN_REQUEST;
 		cout << "Error al seleccionar. Intentando iniciar sesion." << endl;
+		MsgConnectRequest connectionRequest;
+		m_client.sendMessage(&connectionRequest, connectionType);
 	}
 
-	MsgConnectRequest connectionRequest;
-	m_client.sendMessage(&connectionRequest, connectionType);
+	
 
 	while (!m_client.isConnected())
 	{

@@ -70,7 +70,7 @@ class MsgSignupRequest : public NetworkMessage
 public:
 	Package packData() override
 	{
-		MESSAGE_TYPE_VAR MSGTYPE = E::kLOGIN_REQUEST;
+		MESSAGE_TYPE_VAR MSGTYPE = E::kSIGNUP_REQUEST;
 		Package data;
 		data.resize(m_msgData.size() + sizeof(MESSAGE_TYPE_VAR));
 		memcpy(data.data(), &MSGTYPE, sizeof(MESSAGE_TYPE_VAR));
