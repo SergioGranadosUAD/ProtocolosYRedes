@@ -60,6 +60,9 @@
     <ClInclude Include="Include\NetworkServer.h">
       <Filter>Archivos de encabezado\Networking</Filter>
     </ClInclude>
+    <ClInclude Include="Include\Chat.h">
+      <Filter>Archivos de encabezado\UI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Application.cpp">
@@ -82,6 +85,9 @@
     </ClCompile>
     <ClCompile Include="Source\NetworkServer.cpp">
       <Filter>Archivos de origen\Networking</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Chat.cpp">
+      <Filter>Archivos de origen\UI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

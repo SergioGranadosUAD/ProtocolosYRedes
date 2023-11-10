@@ -50,6 +50,13 @@ public:
 	void handlePackage(Package& unpackedData, const uint16& msgType, Client& messageSender);
 	bool clientIsAlreadyConnecting(const Client& messageSender);
 	void syncUser(PackageInformation& packageInfo, Client& messageSender);
+	void signUpUser(const Client& messageSender, const bool& signUp = true);
+	UnconnectedClient* isInIncomingList(const Client& messageSender);
+	void deleteUserInIncomingList(const UnconnectedClient& messageSender);
+	void disconnectUser(const Client& messageSender);
+	void connectUser(const UnconnectedClient* messageSender);
+	bool isUserValid(const UnconnectedClient* messageSender);
+	bool findUsername(const string& username);
 
 	inline bool isRunning() { return m_isRunning; };
 

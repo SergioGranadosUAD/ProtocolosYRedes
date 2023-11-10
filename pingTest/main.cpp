@@ -17,6 +17,7 @@ int main()
 		ConnectUdpClient();
 	}
 	else if (c == 's') {
+		std::cout << "Se ha iniciado el servidor." << std::endl;
 		SetupUdpServer();
 	}
 	else {

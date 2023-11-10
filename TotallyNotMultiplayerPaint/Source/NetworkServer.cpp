@@ -311,47 +311,115 @@ void NetworkServer::syncUser(PackageInformation& packageInfo, Client& messageSen
 	}
 }
 
+void NetworkServer::signUpUser(const Client& messageSender, const bool& signUp)
+{
+	std::cout << "Un usuario se esta conectando..." << endl;
+
+	if (clientIsAlreadyConnecting(messageSender))
+	{
+		MsgDisconnected message;
+		sendMessage(&message, E::kDISCONNECTION, messageSender);
+		return;
+	}
+	UnconnectedClient newClient;
+	newClient.userIp = messageSender.userIp;
+	newClient.userPort = messageSender.userPort;
+
+
+
+	newClient.creatingAccount = signUp;
+	m_incomingClients.push_back(newClient);
+
+	MsgUsernameRequest message;
+	sendMessage(&message, E::kUSERNAME_REQUEST, messageSender);
+}
+
+UnconnectedClient* NetworkServer::isInIncomingList(const Client& messageSender)
+{
+	for (auto& client : m_incomingClients)
+	{
+		if (client.userIp.value() == messageSender.userIp.value() && client.userPort == messageSender.userPort)
+		{
+			return &client;
+		}
+	}
+	return nullptr;
+}
+
+void NetworkServer::deleteUserInIncomingList(const UnconnectedClient& messageSender)
+{
+	for (auto it = m_incomingClients.rbegin(); it != m_incomingClients.rend(); ++it)
+	{
+		auto& cl = *it;
+		if (cl.userIp.value() == messageSender.userIp.value() && cl.userPort == messageSender.userPort)
+		{
+			m_incomingClients.erase((it + 1).base());
+			break;
+		}
+	}
+}
+
+void NetworkServer::disconnectUser(const Client& messageSender)
+{
+	MsgDisconnected message;
+	sendMessage(&message, E::kDISCONNECTION, messageSender);
+}
+
+void NetworkServer::connectUser(const UnconnectedClient* messageSender)
+{
+	Client newClient;
+	newClient.userIp = messageSender->userIp;
+	newClient.userPort = messageSender->userPort;
+	m_userList.push_back(newClient);
+
+	MsgConnected message;
+	sendMessage(&message, E::kCONNECTION_SUCCESSFUL, newClient);
+	cout << "Usuario conectado:" << newClient.userIp.value() << ":" << newClient.userPort << endl;
+	return;
+}
+
+bool NetworkServer::isUserValid(const UnconnectedClient* messageSender)
+{
+	for (auto dict : m_registeredUsers)
+	{
+		if (dict.first == messageSender->userName && dict.second == messageSender->userPass)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool NetworkServer::findUsername(const string& username)
+{
+	for (auto dict : m_registeredUsers)
+	{
+		if (dict.first == username)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
 void NetworkServer::handlePackage(Package& unpackedData, const uint16& msgType, Client& messageSender)
 {
 	switch (msgType) {
 	case E::kLOGIN_REQUEST:
 	{
-		std::cout << "Un usuario se esta conectando..." << endl;
-
-		if (clientIsAlreadyConnecting(messageSender))
+		if (m_registeredUsers.empty())
 		{
-			MsgDisconnected message;
-			sendMessage(&message, E::kDISCONNECTION, messageSender);
-			return;
+			disconnectUser(messageSender);
 		}
-		UnconnectedClient newClient;
-		newClient.userIp = messageSender.userIp;
-		newClient.userPort = messageSender.userPort;
-		newClient.creatingAccount = false;
-		m_incomingClients.push_back(newClient);
 
-		MsgUsernameRequest message;
-		sendMessage(&message, E::kUSERNAME_REQUEST, messageSender);
+		signUpUser(messageSender, false);
 	}
 	break;
 	case E::kSIGNUP_REQUEST:
 	{
-		std::cout << "Un usuario se esta registrando..." << endl;
-
-		if (clientIsAlreadyConnecting(messageSender))
-		{
-			MsgDisconnected message;
-			sendMessage(&message, E::kDISCONNECTION, messageSender);
-			return;
-		}
-		UnconnectedClient newClient;
-		newClient.userIp = messageSender.userIp;
-		newClient.userPort = messageSender.userPort;
-		newClient.creatingAccount = true;
-		m_incomingClients.push_back(newClient);
-
-		MsgUsernameRequest message;
-		sendMessage(&message, E::kUSERNAME_REQUEST, messageSender);
+		signUpUser(messageSender);
 	}
 	break;
 	case E::kUSERNAME_SENT:
@@ -359,14 +427,17 @@ void NetworkServer::handlePackage(Package& unpackedData, const uint16& msgType, 
 		string username(unpackedData.data());
 		username.resize(unpackedData.size());
 
-		for (auto& client : m_incomingClients)
+		UnconnectedClient* pClient = isInIncomingList(messageSender);
+		bool usernameExists = findUsername(username);
+
+		if (pClient == nullptr || (usernameExists && pClient->creatingAccount))
 		{
-			if (client.userIp.value() == messageSender.userIp.value() && client.userPort == messageSender.userPort)
-			{
-				cout << "Nombre de usuario elegido por el cliente: " << username << endl;
-				client.userName = username;
-			}
+			disconnectUser(messageSender);
+			return;
 		}
+		
+		cout << "Nombre de usuario elegido por el cliente: " << username << endl;
+		pClient->userName = username;
 
 		MsgPasswordRequest message;
 		sendMessage(&message, E::kPASSWORD_REQUEST, messageSender);
@@ -377,92 +448,40 @@ void NetworkServer::handlePackage(Package& unpackedData, const uint16& msgType, 
 		string password(unpackedData.data());
 		password.resize(unpackedData.size());
 
-		UnconnectedClient clientReference;
+		UnconnectedClient* pClient = isInIncomingList(messageSender);
 
-		for (int i = 0; i < m_incomingClients.size(); ++i)
+		if (pClient == nullptr)
 		{
-			if (m_incomingClients[i].userIp.value() == messageSender.userIp.value() && m_incomingClients[i].userPort == messageSender.userPort)
-			{
-				cout << "Password elegida por el cliente: " << password << endl;
-				m_incomingClients[i].userPass = password;
-				clientReference = m_incomingClients[i];
-				m_incomingClients.erase(m_incomingClients.begin() + i);
-				break;
-			}
+			disconnectUser(messageSender);
 		}
 
+		pClient->userPass = password;
 
-		bool isCreatingAccount = clientReference.creatingAccount;
-		bool usernameFound = false;
-		bool passwordFound = false;
+		bool isCreatingAccount = pClient->creatingAccount;
 
-		if (m_registeredUsers.empty() && !isCreatingAccount)
-		{
-			cout << "No hay usuarios registrados" << endl;
-			MsgDisconnected message;
-			sendMessage(&message, E::kDISCONNECTION, messageSender);
-			return;
-		}
-
-		for (auto dict : m_registeredUsers)
-		{
-			if (dict.first == clientReference.userName)
-			{
-				usernameFound = true;
-			}
-			if (dict.second == clientReference.userPass)
-			{
-				passwordFound = true;
-			}
-		}
-
-		//Solicitud de registro, usuario duplicado
-		if (usernameFound && isCreatingAccount)
-		{
-			cout << "Usuario con el mismo nombre detectado" << endl;
-			MsgDisconnected message;
-			sendMessage(&message, E::kDISCONNECTION, messageSender);
-			return;
-		}
-		//Solicitud de registro, no se encontró el nombre de usuario.
-		if (!usernameFound && isCreatingAccount)
-		{
-			cout << "Registro exitoso" << endl;
-			m_registeredUsers.insert({ clientReference.userName, clientReference.userPass });
-			Client newClient;
-			newClient.userIp = clientReference.userIp;
-			newClient.userPort = clientReference.userPort;
-			m_userList.push_back(newClient);
-
-			MsgConnected message;
-			sendMessage(&message, E::kCONNECTION_SUCCESSFUL, messageSender);
-			cout << "Usuario conectado:" << newClient.userIp.value() << ":" << newClient.userPort << endl;
-			return;
-		}
-
-		//Solicitud de inicio de sesión, No coinciden usuario y contraseña
-		if ((!usernameFound || !passwordFound) && !isCreatingAccount)
+		bool validUser = isUserValid(pClient);
+		
+		if (!validUser && !isCreatingAccount)
 		{
 			cout << "No se encontro el usuario o la password" << endl;
-			MsgDisconnected message;
-			sendMessage(&message, E::kDISCONNECTION, messageSender);
+			disconnectUser(messageSender);
+			deleteUserInIncomingList(*pClient);
 			return;
 		}
 
-		//Solicitud de inicio de sesión, usuario y contraseña coinciden.
-		if (usernameFound && passwordFound && !isCreatingAccount)
+		if (isCreatingAccount)
+		{
+			cout << "Registro exitoso" << endl;
+			m_registeredUsers.insert({ pClient->userName, pClient->userPass });
+			connectUser(pClient);
+		}
+		else
 		{
 			cout << "Inicio de sesion exitoso" << endl;
-			Client newClient;
-			newClient.userIp = clientReference.userIp;
-			newClient.userPort = clientReference.userPort;
-			m_userList.push_back(newClient);
-
-			MsgConnected message;
-			sendMessage(&message, E::kCONNECTION_SUCCESSFUL, messageSender);
-			cout << "Usuario conectado:" << newClient.userIp.value() << ":" << newClient.userPort << endl;
-			return;
+			connectUser(pClient);
 		}
+
+		deleteUserInIncomingList(*pClient);
 	}
 	break;
 	case E::kDISCONNECTION:

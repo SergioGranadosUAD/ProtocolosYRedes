@@ -27,6 +27,7 @@ int main() {
 	}
 	else if (input == "s") 
 	{
+		cout << "Se ha iniciado el servidor en el puerto 25565" << endl;
 		NetworkServer* server = nullptr;
 		server = new NetworkServer;
 		while (server->isRunning()) {

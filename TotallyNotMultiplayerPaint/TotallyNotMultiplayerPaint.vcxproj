@@ -143,6 +143,7 @@
   <ItemGroup>
     <ClInclude Include="Include\Application.h" />
     <ClInclude Include="Include\Button.h" />
+    <ClInclude Include="Include\Chat.h" />
     <ClInclude Include="Include\Drawing.h" />
     <ClInclude Include="Include\NetworkClient.h" />
     <ClInclude Include="Include\NetworkMessage.h" />
@@ -154,6 +155,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Source\Application.cpp" />
     <ClCompile Include="Source\Button.cpp" />
+    <ClCompile Include="Source\Chat.cpp" />
     <ClCompile Include="Source\Drawing.cpp" />
     <ClCompile Include="Source\NetworkClient.cpp" />
     <ClCompile Include="Source\NetworkMessage.cpp" />
