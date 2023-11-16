@@ -321,8 +321,9 @@ void Application::handlePackage(Package unpackedData, uint16 msgType)
 	break;
 	case E::kCREATE_LINE:
 	{
-		MsgCreateLine m;
-		MsgCreateLine::LineData realData = *(reinterpret_cast<MsgCreateLine::LineData*>(unpackedData.data()));
+		MsgCreateLine message;
+		MsgCreateLine::LineData realData;
+		message.unpackData(unpackedData.data(), &realData, unpackedData.size());
 
 		SHAPE_TYPE shpType = SHAPE_TYPE::LINE;
 
@@ -337,8 +338,9 @@ void Application::handlePackage(Package unpackedData, uint16 msgType)
 	break;
 	case E::kCREATE_RECTANGLE:
 	{
-		MsgCreateRectangle m;
-		MsgCreateRectangle::RectangleData realData = *(reinterpret_cast<MsgCreateRectangle::RectangleData*>(unpackedData.data()));
+		MsgCreateRectangle message;
+		MsgCreateRectangle::RectangleData realData;
+		message.unpackData(unpackedData.data(), &realData, unpackedData.size());
 
 		SHAPE_TYPE shpType = SHAPE_TYPE::RECTANGLE;
 
@@ -353,8 +355,9 @@ void Application::handlePackage(Package unpackedData, uint16 msgType)
 	break;
 	case E::kCREATE_CIRCLE:
 	{
-		MsgCreateCircle m;
-		MsgCreateCircle::CircleData realData = *(reinterpret_cast<MsgCreateCircle::CircleData*>(unpackedData.data()));
+		MsgCreateCircle message;
+		MsgCreateCircle::CircleData realData;
+		message.unpackData(unpackedData.data(), &realData, unpackedData.size());
 
 		SHAPE_TYPE shpType = SHAPE_TYPE::CIRCLE;
 
@@ -369,13 +372,9 @@ void Application::handlePackage(Package unpackedData, uint16 msgType)
 	break;
 	case E::kCREATE_FREEDRAW:
 	{
-		MsgCreateFreedraw m;
+		MsgCreateFreedraw message;
 		MsgCreateFreedraw::FreedrawData realData;
-
-		memcpy(&realData.colorID, &unpackedData[0], sizeof(unsigned short));
-		memcpy(&realData.vectorSize, &unpackedData[sizeof(unsigned short)], sizeof(unsigned int));
-		realData.pointPositions.resize(realData.vectorSize);
-		memcpy(realData.pointPositions.data(), &unpackedData[sizeof(unsigned short) + sizeof(unsigned int)], sizeof(float)* realData.vectorSize);
+		message.unpackData(unpackedData.data(), &realData, unpackedData.size());
 
 		SHAPE_TYPE shpType = SHAPE_TYPE::FREEDRAW;
 
@@ -416,8 +415,7 @@ void Application::sendShape()
 	break;
 	case SHAPE_TYPE::FREEDRAW:
 	{
-		vector<float> vertexPositions = m_PreviewShape.getFreedrawPositions();
-		MsgCreateFreedraw msg(colorID, vertexPositions.size(), vertexPositions);
+		MsgCreateFreedraw msg(startingPos.x, startingPos.y, finalPos.x, finalPos.y, colorID);
 		m_client.sendMessage(&msg, E::kCREATE_FREEDRAW);
 	}
 	break;

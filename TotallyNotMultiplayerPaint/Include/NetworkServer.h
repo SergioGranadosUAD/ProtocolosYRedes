@@ -7,6 +7,7 @@
 using std::unordered_map;
 using std::cout;
 using std::endl;
+using sf::Clock;
 
 struct UnconnectedClient 
 {
@@ -27,6 +28,7 @@ struct PackageInformation
 {
 	Package pack;
 	uint16 msgType;
+	size_t packageID;
 };
 
 class NetworkServer : public NetworkRole
@@ -57,6 +59,9 @@ public:
 	void connectUser(const UnconnectedClient* messageSender);
 	bool isUserValid(const UnconnectedClient* messageSender);
 	bool findUsername(const string& username);
+	void sendMessageToAllUsers(NetworkMessage* message, E::NETWORK_MSG& typeToSend, const Client& messageSender);
+	void saveMessageToSyncList(const Package& unpackedData, const uint16& msgType, bool isNewMessage);
+	bool checkForNewMessage();
 
 	inline bool isRunning() { return m_isRunning; };
 
@@ -69,7 +74,8 @@ private:
 
 	UdpSocket socket;
 
-	
+	Clock m_newMessageTimer;
+	size_t m_messageIDCount = 0;
 };
 
 template<typename T>

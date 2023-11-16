@@ -238,18 +238,13 @@ void NetworkServer::syncUser(PackageInformation& packageInfo, Client& messageSen
 	{
 	case E::kCREATE_LINE:
 	{
-		MsgCreateLine m;
-		MsgCreateLine::LineData realData = *(reinterpret_cast<MsgCreateLine::LineData*>(packageInfo.pack.data()));
-		//m.unpackData(&realData, unpackedData.data(), unpackedData.size());
+		MsgCreateLine message;
+		MsgCreateLine::LineData realData;
+		message.unpackData(packageInfo.pack.data(), &realData, packageInfo.pack.size());
 
 		cout << "Shape created by user." << endl;
 		E::NETWORK_MSG typeToSend = static_cast<E::NETWORK_MSG>(packageInfo.msgType);
-
-		MsgCreateLine message(realData.initialPosX,
-			realData.initialPosY,
-			realData.finalPosX,
-			realData.finalPosY,
-			realData.colorID);
+		message.m_msgData = realData;
 
 		cout << "Sending shape information to user " << messageSender.userIp.value() << ":" << messageSender.userPort << endl;
 		sendMessage(&message, typeToSend, messageSender);
@@ -257,17 +252,14 @@ void NetworkServer::syncUser(PackageInformation& packageInfo, Client& messageSen
 	break;
 	case E::kCREATE_RECTANGLE:
 	{
-		MsgCreateRectangle m;
-		MsgCreateRectangle::RectangleData realData = *(reinterpret_cast<MsgCreateRectangle::RectangleData*>(packageInfo.pack.data()));
-		//m.unpackData(&realData, unpackedData.data(), unpackedData.size());
+
+		MsgCreateRectangle message;
+		MsgCreateRectangle::RectangleData realData;
+		message.unpackData(packageInfo.pack.data(), &realData, packageInfo.pack.size());
 
 		cout << "Shape created by user." << endl;
 		E::NETWORK_MSG typeToSend = static_cast<E::NETWORK_MSG>(packageInfo.msgType);
-		MsgCreateRectangle message(realData.initialPosX,
-			realData.initialPosY,
-			realData.finalPosX,
-			realData.finalPosY,
-			realData.colorID);
+		message.m_msgData = realData;
 		
 		cout << "Sending shape information to user " << messageSender.userIp.value() << ":" << messageSender.userPort << endl;
 		sendMessage(&message, typeToSend, messageSender);
@@ -275,17 +267,14 @@ void NetworkServer::syncUser(PackageInformation& packageInfo, Client& messageSen
 	break;
 	case E::kCREATE_CIRCLE:
 	{
-		MsgCreateCircle m;
-		MsgCreateCircle::CircleData realData = *(reinterpret_cast<MsgCreateCircle::CircleData*>(packageInfo.pack.data()));
-		//m.unpackData(&realData, unpackedData.data(), unpackedData.size());
+		MsgCreateCircle message;
+		MsgCreateCircle::CircleData realData;
+		message.unpackData(packageInfo.pack.data(), &realData, packageInfo.pack.size());
 
 		cout << "Shape created by user." << endl;
+
 		E::NETWORK_MSG typeToSend = static_cast<E::NETWORK_MSG>(packageInfo.msgType);
-		MsgCreateCircle message(realData.initialPosX,
-			realData.initialPosY,
-			realData.finalPosX,
-			realData.finalPosY,
-			realData.colorID);
+		message.m_msgData = realData;
 		
 		cout << "Sending shape information to user " << messageSender.userIp.value() << ":" << messageSender.userPort << endl;
 		sendMessage(&message, typeToSend, messageSender);
@@ -293,17 +282,14 @@ void NetworkServer::syncUser(PackageInformation& packageInfo, Client& messageSen
 	break;
 	case E::kCREATE_FREEDRAW:
 	{
-		MsgCreateFreedraw m;
+		MsgCreateFreedraw message;
 		MsgCreateFreedraw::FreedrawData realData;
-
-		memcpy(&realData.colorID, &packageInfo.pack[0], sizeof(unsigned short));
-		memcpy(&realData.vectorSize, &packageInfo.pack[sizeof(unsigned short)], sizeof(unsigned int));
-		realData.pointPositions.resize(realData.vectorSize);
-		memcpy(realData.pointPositions.data(), &packageInfo.pack[sizeof(unsigned short) + sizeof(unsigned int)], sizeof(float) * realData.vectorSize);
+		message.unpackData(packageInfo.pack.data(), &realData, packageInfo.pack.size());
 
 		cout << "Shape created by user." << endl;
+
 		E::NETWORK_MSG typeToSend = static_cast<E::NETWORK_MSG>(packageInfo.msgType);
-		MsgCreateFreedraw message(realData.colorID, realData.vectorSize, realData.pointPositions);
+		message.m_msgData = realData;
 
 		cout << "Sending shape information to user: " << messageSender.userIp.value() << messageSender.userPort << endl;
 		sendMessage(&message, typeToSend, messageSender);
@@ -404,6 +390,45 @@ bool NetworkServer::findUsername(const string& username)
 	return false;
 }
 
+void NetworkServer::sendMessageToAllUsers(NetworkMessage* message, E::NETWORK_MSG& typeToSend, const Client& messageSender)
+{
+	for (auto& client : m_userList)
+	{
+		if ((client.userIp.value() != messageSender.userIp.value() && client.userPort != messageSender.userPort) ||
+			(client.userIp.value() == messageSender.userIp.value() && client.userPort != messageSender.userPort))
+		{
+			cout << "Sending shape information to user " << client.userIp.value() << ":" << client.userPort << endl;
+			sendMessage(message, typeToSend, client);
+		}
+	}
+}
+
+void NetworkServer::saveMessageToSyncList(const Package& unpackedData, const uint16& msgType, bool isNewMessage)
+{
+	if (isNewMessage)
+	{
+		++m_messageIDCount;
+	}
+
+	PackageInformation dataToStore;
+	dataToStore.pack = unpackedData;
+	dataToStore.msgType = msgType;
+	dataToStore.packageID = m_messageIDCount;
+	m_boardSyncStorage.push_back(dataToStore);
+}
+
+bool NetworkServer::checkForNewMessage()
+{
+	float timeSinceLastMessage = m_newMessageTimer.getElapsedTime().asSeconds();
+	m_newMessageTimer.restart();
+
+	if (timeSinceLastMessage > 1)
+	{
+		return true;
+	}
+	return false;
+}
+
 void NetworkServer::handlePackage(Package& unpackedData, const uint16& msgType, Client& messageSender)
 {
 	switch (msgType) {
@@ -499,120 +524,65 @@ void NetworkServer::handlePackage(Package& unpackedData, const uint16& msgType, 
 	break;
 	case E::kCREATE_LINE:
 	{
-		PackageInformation dataToStore;
-		dataToStore.pack = unpackedData;
-		dataToStore.msgType = msgType;
-		m_boardSyncStorage.push_back(dataToStore);
+		saveMessageToSyncList(unpackedData, msgType, true);
 
-		MsgCreateLine m;
-		MsgCreateLine::LineData realData = *(reinterpret_cast<MsgCreateLine::LineData*>(unpackedData.data()));
-		//m.unpackData(&realData, unpackedData.data(), unpackedData.size());
+		MsgCreateLine message;
+		MsgCreateLine::LineData realData;
+		message.unpackData(unpackedData.data() , &realData, unpackedData.size());
 
 		cout << "Shape created by user." << endl;
 		E::NETWORK_MSG typeToSend = static_cast<E::NETWORK_MSG>(msgType);
-
-		MsgCreateLine message(realData.initialPosX,
-			realData.initialPosY,
-			realData.finalPosX,
-			realData.finalPosY,
-			realData.colorID);
-		for (auto& client : m_userList)
-		{
-			if ((client.userIp.value() != messageSender.userIp.value() && client.userPort != messageSender.userPort) ||
-				(client.userIp.value() == messageSender.userIp.value() && client.userPort != messageSender.userPort))
-			{
-				cout << "Sending shape information to user " << client.userIp.value() << ":" << client.userPort << endl;
-				sendMessage(&message, typeToSend, client);
-			}
-		}
+		message.m_msgData = realData;
+		
+		sendMessageToAllUsers(&message, typeToSend, messageSender);
 	}
 	break;
 	case E::kCREATE_RECTANGLE:
 	{
-		PackageInformation dataToStore;
-		dataToStore.pack = unpackedData;
-		dataToStore.msgType = msgType;
-		m_boardSyncStorage.push_back(dataToStore);
+		saveMessageToSyncList(unpackedData, msgType, true);
 
-		MsgCreateRectangle m;
-		MsgCreateRectangle::RectangleData realData = *(reinterpret_cast<MsgCreateRectangle::RectangleData*>(unpackedData.data()));
-		//m.unpackData(&realData, unpackedData.data(), unpackedData.size());
+		MsgCreateRectangle message;
+		MsgCreateRectangle::RectangleData realData;
+		message.unpackData(unpackedData.data(), &realData, unpackedData.size());
 
 		cout << "Shape created by user." << endl;
 		E::NETWORK_MSG typeToSend = static_cast<E::NETWORK_MSG>(msgType);
-		MsgCreateRectangle message(realData.initialPosX,
-			realData.initialPosY,
-			realData.finalPosX,
-			realData.finalPosY,
-			realData.colorID);
-		for (auto& client : m_userList)
-		{
-			if ((client.userIp.value() != messageSender.userIp.value() && client.userPort != messageSender.userPort) ||
-				(client.userIp.value() == messageSender.userIp.value() && client.userPort != messageSender.userPort))
-			{
-				cout << "Sending shape information to user " << client.userIp.value() << ":" << client.userPort << endl;
-				sendMessage(&message, typeToSend, client);
-			}
-		}
+		message.m_msgData = realData;
+
+		sendMessageToAllUsers(&message, typeToSend, messageSender);
 	}
 	break;
 	case E::kCREATE_CIRCLE:
 	{
-		PackageInformation dataToStore;
-		dataToStore.pack = unpackedData;
-		dataToStore.msgType = msgType;
-		m_boardSyncStorage.push_back(dataToStore);
+		saveMessageToSyncList(unpackedData, msgType, true);
 
-		MsgCreateCircle m;
-		MsgCreateCircle::CircleData realData = *(reinterpret_cast<MsgCreateCircle::CircleData*>(unpackedData.data()));
-		//m.unpackData(&realData, unpackedData.data(), unpackedData.size());
+		MsgCreateCircle message;
+		MsgCreateCircle::CircleData realData;
+		message.unpackData(unpackedData.data(), &realData, unpackedData.size());
 
 		cout << "Shape created by user." << endl;
 
 		E::NETWORK_MSG typeToSend = static_cast<E::NETWORK_MSG>(msgType);
-		MsgCreateCircle message(realData.initialPosX,
-			realData.initialPosY,
-			realData.finalPosX,
-			realData.finalPosY,
-			realData.colorID);
-		for (auto& client : m_userList)
-		{
-			if ((client.userIp.value() != messageSender.userIp.value() && client.userPort != messageSender.userPort) ||
-				(client.userIp.value() == messageSender.userIp.value() && client.userPort != messageSender.userPort))
-			{
-				cout << "Sending shape information to user " << client.userIp.value() << client.userPort << endl;
-				sendMessage(&message, typeToSend, client);
-			}
-		}
+		message.m_msgData = realData;
+
+		sendMessageToAllUsers(&message, typeToSend, messageSender);
 	}
 	break;
 	case E::kCREATE_FREEDRAW:
 	{
-		PackageInformation dataToStore;
-		dataToStore.pack = unpackedData;
-		dataToStore.msgType = msgType;
-		m_boardSyncStorage.push_back(dataToStore);
+		bool isNewMessage = checkForNewMessage();
+		saveMessageToSyncList(unpackedData, msgType, isNewMessage);
 
-		MsgCreateFreedraw m;
+		MsgCreateFreedraw message;
 		MsgCreateFreedraw::FreedrawData realData;
-
-		memcpy(&realData.colorID, &unpackedData[0], sizeof(unsigned short));
-		memcpy(&realData.vectorSize, &unpackedData[sizeof(unsigned short)], sizeof(unsigned int));
-		realData.pointPositions.resize(realData.vectorSize);
-		memcpy(realData.pointPositions.data(), &unpackedData[sizeof(unsigned short) + sizeof(unsigned int)], sizeof(float)* realData.vectorSize);
+		message.unpackData(unpackedData.data(), &realData, unpackedData.size());
 
 		cout << "Shape created by user." << endl;
+
 		E::NETWORK_MSG typeToSend = static_cast<E::NETWORK_MSG>(msgType);
-		MsgCreateFreedraw message(realData.colorID, realData.vectorSize, realData.pointPositions);
-		for (auto& client : m_userList)
-		{
-			if ((client.userIp.value() != messageSender.userIp.value() && client.userPort != messageSender.userPort) ||
-				(client.userIp.value() == messageSender.userIp.value() && client.userPort != messageSender.userPort))
-			{
-				cout << "Sending shape information to user: " << client.userIp.value() << client.userPort << endl;
-				sendMessage(&message, typeToSend, client);
-			}
-		}
+		message.m_msgData = realData;
+
+		sendMessageToAllUsers(&message, typeToSend, messageSender);
 	}
 	break;
 	case E::kSYNC_USER:

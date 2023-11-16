@@ -45,7 +45,6 @@ public:
 	void Clear();
 	void Reset();
 	void CreateShape(const Vector2f& startingPos, const SHAPE_TYPE& eShapeType);
-	void CreateFreedraw(vector<float>& vertexPositions);
 
 	inline Shape* GetShapePtr() { return m_pBaseShape; };
 	inline VertexArray* GetFreeDrawPtr() { return m_pFreeLineShape; };
