@@ -60,7 +60,7 @@ public:
 	bool isUserValid(const UnconnectedClient* messageSender);
 	bool findUsername(const string& username);
 	void sendMessageToAllUsers(NetworkMessage* message, E::NETWORK_MSG& typeToSend, const Client& messageSender);
-	void saveMessageToSyncList(const Package& unpackedData, const uint16& msgType, bool isNewMessage);
+	void saveMessageToSyncList(const Package& unpackedData, const uint16& msgType);
 	bool checkForNewMessage();
 
 	inline bool isRunning() { return m_isRunning; };

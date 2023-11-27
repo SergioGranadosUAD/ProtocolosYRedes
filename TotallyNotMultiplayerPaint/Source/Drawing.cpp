@@ -40,14 +40,12 @@ void Drawing::Update(const Vector2f& actualPos)
 	}
 	else if (m_ShapeType == SHAPE_TYPE::FREEDRAW) 
 	{
-		if (m_StartingPosition == actualPos) 
+		if (!isValidLine(m_StartingPosition, actualPos)) 
 		{
 			return;
 		}
 
-		m_pFreeLineShape->append(actualPos);
-		size_t vertexCount = m_pFreeLineShape->getVertexCount() - 1;
-		(*m_pFreeLineShape)[vertexCount].color = sf::Color::Red;
+		m_pFreeLineShape->push_back(Vertex(actualPos, sf::Color::Red));
 	}
 
 	m_FinalPosition = actualPos;
@@ -57,7 +55,7 @@ void Drawing::Render(RenderWindow& window)
 {
 	if (m_pFreeLineShape != nullptr) 
 	{
-		window.draw(*m_pFreeLineShape);
+		window.draw(m_pFreeLineShape->data(), m_pFreeLineShape->size(), sf::PrimitiveType::LineStrip);
 		return;
 	}
 
@@ -104,9 +102,9 @@ void Drawing::CreateShape(const Vector2f& startingPos, const SHAPE_TYPE& eShapeT
 
 	if (m_ShapeType == SHAPE_TYPE::FREEDRAW) 
 	{
-		m_pFreeLineShape = new VertexArray(sf::PrimitiveType::LineStrip, 0);
-		m_pFreeLineShape->append(startingPos);
-		(*m_pFreeLineShape)[0].color = sf::Color::Red;
+		m_pFreeLineShape = new vector<Vertex>;
+		Vertex initialVertex(startingPos, sf::Color::Red);
+		m_pFreeLineShape->push_back(initialVertex);
 		return;
 	}
 
@@ -129,62 +127,22 @@ void Drawing::CreateShape(const Vector2f& startingPos, const SHAPE_TYPE& eShapeT
 	m_pBaseShape->setOutlineColor(sf::Color::Red);
 }
 
-
-vector<float> Drawing::getFreedrawPositions()
+bool Drawing::isValidLine(const Vector2f& initialPos, const Vector2f& finalPos)
 {
-	vector<float> vec;
-	for (int i = 0; i < m_pFreeLineShape->getVertexCount(); ++i)
-	{
-		vec.push_back((*m_pFreeLineShape)[i].position.x);
-		vec.push_back((*m_pFreeLineShape)[i].position.y);
-	}
-	return vec;
+	return initialPos != finalPos;
 }
 
-void Drawing::SetColor(unsigned int colorID)
+void Drawing::SetColor(Color colorID)
 {
-	m_colorID = colorID;
-	Color setColor;
-	switch (colorID)
-	{
-	case SHAPE_COLOR::BLACK:
-		setColor = Color::Black;
-		break;
-	case SHAPE_COLOR::WHITE:
-		setColor = Color::White;
-		break;
-	case SHAPE_COLOR::RED:
-		setColor = Color::Red;
-		break;
-	case SHAPE_COLOR::GREEN:
-		setColor = Color::Green;
-		break;
-	case SHAPE_COLOR::BLUE:
-		setColor = Color::Blue;
-		break;
-	case SHAPE_COLOR::YELLOW:
-		setColor = Color::Yellow;
-		break;
-	case SHAPE_COLOR::MAGENTA:
-		setColor = Color::Magenta;
-		break;
-	case SHAPE_COLOR::CYAN:
-		setColor = Color::Cyan;
-		break;
-	default:
-		setColor = Color::Black;
-	}
-
 	if (m_ShapeType == SHAPE_TYPE::FREEDRAW) 
 	{
-		size_t vertexCount = m_pFreeLineShape->getVertexCount() - 1;
-		for (int i = 0; i < vertexCount; ++i) 
+		for (int i = 0; i < m_pFreeLineShape->size(); ++i) 
 		{
-			(*m_pFreeLineShape)[i].color = setColor;
+			m_pFreeLineShape->at(i).color = colorID;
 		}
 		return;
 	}
 
-	m_pBaseShape->setOutlineColor(setColor);
+	m_pBaseShape->setOutlineColor(colorID);
 }
 

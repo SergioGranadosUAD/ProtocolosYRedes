@@ -30,6 +30,7 @@ using sf::Vector2u;
 using sf::Vector2f;
 using sf::Shape;
 using sf::Angle;
+using sf::Vertex;
 using sf::radians;
 
 class Application {
@@ -51,16 +52,17 @@ public:
 private:
 	RenderWindow m_Window;
 	vector<Drawing> m_ShapeList;
+	vector<Vertex> m_FreedrawList;
 	SHAPE_TYPE m_ActualShape;
 	Drawing m_PreviewShape;
 	bool m_MouseButtonDown;
 	Vector2f m_InitialMousePosition;
-	uint16 m_SelectedColor;
+	Color m_SelectedColor;
 	NetworkClient m_client;
 
 	Button m_buttons[BUTTON_COUNT];
 	Texture m_buttonsTexture;
 
-	void setSelectedColor(SHAPE_COLOR setColor);
+	void setSelectedColor(Color setColor);
 	Vector2f GetMousePosition() { return m_Window.mapPixelToCoords(sf::Mouse::getPosition(m_Window)); };
 };

@@ -403,13 +403,9 @@ void NetworkServer::sendMessageToAllUsers(NetworkMessage* message, E::NETWORK_MS
 	}
 }
 
-void NetworkServer::saveMessageToSyncList(const Package& unpackedData, const uint16& msgType, bool isNewMessage)
+void NetworkServer::saveMessageToSyncList(const Package& unpackedData, const uint16& msgType)
 {
-	if (isNewMessage)
-	{
-		++m_messageIDCount;
-	}
-
+	++m_messageIDCount;
 	PackageInformation dataToStore;
 	dataToStore.pack = unpackedData;
 	dataToStore.msgType = msgType;
@@ -524,7 +520,7 @@ void NetworkServer::handlePackage(Package& unpackedData, const uint16& msgType, 
 	break;
 	case E::kCREATE_LINE:
 	{
-		saveMessageToSyncList(unpackedData, msgType, true);
+		saveMessageToSyncList(unpackedData, msgType);
 
 		MsgCreateLine message;
 		MsgCreateLine::LineData realData;
@@ -539,7 +535,7 @@ void NetworkServer::handlePackage(Package& unpackedData, const uint16& msgType, 
 	break;
 	case E::kCREATE_RECTANGLE:
 	{
-		saveMessageToSyncList(unpackedData, msgType, true);
+		saveMessageToSyncList(unpackedData, msgType);
 
 		MsgCreateRectangle message;
 		MsgCreateRectangle::RectangleData realData;
@@ -554,7 +550,7 @@ void NetworkServer::handlePackage(Package& unpackedData, const uint16& msgType, 
 	break;
 	case E::kCREATE_CIRCLE:
 	{
-		saveMessageToSyncList(unpackedData, msgType, true);
+		saveMessageToSyncList(unpackedData, msgType);
 
 		MsgCreateCircle message;
 		MsgCreateCircle::CircleData realData;
@@ -570,8 +566,7 @@ void NetworkServer::handlePackage(Package& unpackedData, const uint16& msgType, 
 	break;
 	case E::kCREATE_FREEDRAW:
 	{
-		bool isNewMessage = checkForNewMessage();
-		saveMessageToSyncList(unpackedData, msgType, isNewMessage);
+		saveMessageToSyncList(unpackedData, msgType);
 
 		MsgCreateFreedraw message;
 		MsgCreateFreedraw::FreedrawData realData;

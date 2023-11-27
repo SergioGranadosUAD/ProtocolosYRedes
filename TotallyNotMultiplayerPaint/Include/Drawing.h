@@ -3,7 +3,7 @@
 #include <SFML/Graphics.hpp>
 
 using std::vector;
-using sf::VertexArray;
+using sf::Vertex;
 using sf::Shape;
 using sf::RectangleShape;
 using sf::CircleShape;
@@ -22,18 +22,6 @@ enum SHAPE_TYPE
 	TEXT
 };
 
-enum SHAPE_COLOR
-{
-	BLACK = 0,
-	WHITE,
-	RED,
-	GREEN,
-	BLUE,
-	YELLOW,
-	MAGENTA,
-	CYAN
-};
-
 class Drawing
 {
 public:
@@ -47,22 +35,22 @@ public:
 	void CreateShape(const Vector2f& startingPos, const SHAPE_TYPE& eShapeType);
 
 	inline Shape* GetShapePtr() { return m_pBaseShape; };
-	inline VertexArray* GetFreeDrawPtr() { return m_pFreeLineShape; };
+	//inline VertexArray* GetFreeDrawPtr() { return m_pFreeLineShape; };
 	inline SHAPE_TYPE GetShapeType() { return m_ShapeType; };
 	inline bool IsShapeCreated() { return m_ShapeCreated; };
 	inline Vector2f getStartingPos() { return m_StartingPosition; };
 	inline Vector2f getFinalPos() { return m_FinalPosition; };
-	inline unsigned short getColorID() { return m_colorID; };
-	vector<float> getFreedrawPositions();
+	inline Color getColorID() { return m_colorID; };
+	bool isValidLine(const Vector2f& initialPos, const Vector2f& finalPos);
 
-	void SetColor(unsigned int colorID);
+	void SetColor(Color colorID);
 private:
 	Shape* m_pBaseShape;
-	VertexArray* m_pFreeLineShape;
+	vector<Vertex>* m_pFreeLineShape;
 	SHAPE_TYPE m_ShapeType;
 	Vector2f m_StartingPosition;
 	Vector2f m_FinalPosition;
-	unsigned short m_colorID;
+	Color m_colorID;
 	bool m_ShapeCreated;
 };
 

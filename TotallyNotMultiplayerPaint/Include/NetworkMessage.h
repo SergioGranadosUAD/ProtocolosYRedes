@@ -1,4 +1,5 @@
 #pragma once
+#include <SFML/Graphics.hpp>
 #include <vector>
 #include <string>
 
@@ -25,6 +26,7 @@ namespace E {
 
 using std::string;
 using std::vector;
+using sf::Color;
 using Package = vector<char>;
 
 class NetworkMessage
@@ -283,7 +285,7 @@ public:
 	MsgCreateLine(Package data) {
 		unpackData(&m_msgData, data.data(), data.size());
 	};
-	MsgCreateLine(float iniPosX, float iniPosY, float finPosX, float finPosY, unsigned short colorID)
+	MsgCreateLine(float iniPosX, float iniPosY, float finPosX, float finPosY, Color colorID)
 	{
 		m_msgData.initialPosX = iniPosX;
 		m_msgData.initialPosY = iniPosY;
@@ -321,7 +323,7 @@ public:
 		float initialPosY;
 		float finalPosX;
 		float finalPosY;
-		unsigned short colorID;
+		Color colorID;
 	} m_msgData;
 };
 
@@ -332,7 +334,7 @@ public:
 	MsgCreateRectangle(Package data) {
 		unpackData(&m_msgData, data.data(), data.size());
 	};
-	MsgCreateRectangle(float iniPosX, float iniPosY, float finPosX, float finPosY, unsigned short colorID)
+	MsgCreateRectangle(float iniPosX, float iniPosY, float finPosX, float finPosY, Color colorID)
 	{
 		m_msgData.initialPosX = iniPosX;
 		m_msgData.initialPosY = iniPosY;
@@ -369,7 +371,7 @@ public:
 		float initialPosY;
 		float finalPosX;
 		float finalPosY;
-		unsigned short colorID;
+		Color colorID;
 	} m_msgData;
 };
 
@@ -381,7 +383,7 @@ public:
 	{
 		unpackData(&m_msgData, data.data(), data.size());
 	};
-	MsgCreateCircle(float iniPosX, float iniPosY, float finPosX, float finPosY, unsigned short colorID)
+	MsgCreateCircle(float iniPosX, float iniPosY, float finPosX, float finPosY, Color colorID)
 	{
 		m_msgData.initialPosX = iniPosX;
 		m_msgData.initialPosY = iniPosY;
@@ -419,7 +421,7 @@ public:
 		float initialPosY;
 		float finalPosX;
 		float finalPosY;
-		unsigned short colorID;
+		Color colorID;
 	} m_msgData;
 };
 
@@ -427,7 +429,7 @@ class MsgCreateFreedraw : public NetworkMessage
 {
 public:
 	MsgCreateFreedraw() = default;
-	MsgCreateFreedraw(float iniPosX, float iniPosY, float finPosX, float finPosY, unsigned short colorID)
+	MsgCreateFreedraw(float iniPosX, float iniPosY, float finPosX, float finPosY, Color colorID)
 	{
 		m_msgData.initialPosX = iniPosX;
 		m_msgData.initialPosY = iniPosY;
@@ -465,7 +467,7 @@ public:
 		float initialPosY;
 		float finalPosX;
 		float finalPosY;
-		unsigned short colorID;
+		Color colorID;
 	} m_msgData;
 };
 

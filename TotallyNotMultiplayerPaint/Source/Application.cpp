@@ -5,7 +5,7 @@ Application::Application() :
 	m_ActualShape(SHAPE_TYPE::LINE),
 	m_PreviewShape(),
 	m_MouseButtonDown(false) ,
-	m_SelectedColor(SHAPE_COLOR::WHITE)
+	m_SelectedColor(Color::White)
 {
 	/////////////////////
 	//	Placeholder
@@ -127,39 +127,39 @@ void Application::initButtons()
 
 	m_buttons[0].setButtonAction([this]()
 		{
-			setSelectedColor(SHAPE_COLOR::BLACK);
+			setSelectedColor(Color::Black);
 		});
 	m_buttons[1].setButtonAction([this]()
 		{
-			setSelectedColor(SHAPE_COLOR::WHITE);
+			setSelectedColor(Color::White);
 		});
 	m_buttons[2].setButtonAction([this]()
 		{
-			setSelectedColor(SHAPE_COLOR::RED);
+			setSelectedColor(Color::Red);
 		});
 	m_buttons[3].setButtonAction([this]()
 		{
-			setSelectedColor(SHAPE_COLOR::GREEN);
+			setSelectedColor(Color::Green);
 		});
 
 	m_buttons[4].setButtonAction([this]()
 		{
-			setSelectedColor(SHAPE_COLOR::BLUE);
+			setSelectedColor(Color::Blue);
 		});
 
 	m_buttons[5].setButtonAction([this]()
 		{
-			setSelectedColor(SHAPE_COLOR::YELLOW);
+			setSelectedColor(Color::Yellow);
 		});
 
 	m_buttons[6].setButtonAction([this]()
 		{
-			setSelectedColor(SHAPE_COLOR::MAGENTA);
+			setSelectedColor(Color::Magenta);
 		});
 
 	m_buttons[7].setButtonAction([this]()
 		{
-			setSelectedColor(SHAPE_COLOR::CYAN);
+			setSelectedColor(Color::Cyan);
 		});
 
 	m_buttons[8].setButtonAction([this]()
@@ -205,23 +205,46 @@ void Application::HandleInput()
 					return;
 				}
 			}
+
+			m_MouseButtonDown = true;
+
+			if (m_ActualShape == SHAPE_TYPE::FREEDRAW)
+			{
+				m_FreedrawList.push_back(Vertex(GetMousePosition(), m_SelectedColor));
+				break;
+			}
+
 			m_PreviewShape.CreateShape(GetMousePosition(), m_ActualShape);
 			cout << "Shape created at pos " << GetMousePosition().x << ", " << GetMousePosition().y << endl;
-			m_MouseButtonDown = true;
 			break;
 		case Event::MouseButtonReleased:
 			if (m_MouseButtonDown) {
+				m_MouseButtonDown = false;
+				if (m_ActualShape == SHAPE_TYPE::FREEDRAW)
+				{
+					m_FreedrawList.push_back(Vertex(GetMousePosition(), m_SelectedColor));
+					break;
+				}
+
 				m_PreviewShape.SetColor(m_SelectedColor);
 				m_ShapeList.push_back(m_PreviewShape);
 				sendShape();
 				m_PreviewShape.Reset();
-				m_MouseButtonDown = false;
 			}
 			break;
 		case Event::MouseMoved:
 			if (m_MouseButtonDown) {
-				if (m_PreviewShape.IsShapeCreated() && m_MouseButtonDown) {
+				if (m_PreviewShape.IsShapeCreated()) {
 					m_PreviewShape.Update(GetMousePosition());
+					break;
+				}
+
+				Vector2f latestVectorPosition = m_FreedrawList[m_FreedrawList.size() - 1].position;
+				if (latestVectorPosition != GetMousePosition())
+				{
+					m_FreedrawList.push_back(Vertex(GetMousePosition(), m_SelectedColor));
+					m_FreedrawList.push_back(Vertex(GetMousePosition(), m_SelectedColor));
+					break;
 				}
 			}
 			break;
@@ -255,10 +278,19 @@ void Application::Render() {
 		buttons.render(m_Window);
 	}
 
+	if (m_FreedrawList.size() > 0) {
+		for (int i = 0; i < m_FreedrawList.size() - 1; i += 2)
+		{
+			Vertex vertexLine[2] = { m_FreedrawList[i], m_FreedrawList[i + 1] };
+			m_Window.draw(vertexLine, 2, sf::PrimitiveType::Lines);
+		}
+		//m_Window.draw(m_FreedrawList.data(), m_FreedrawList.size(), sf::PrimitiveType::Lines);
+	}
+
 	m_Window.display();
 }
 
-void Application::setSelectedColor(SHAPE_COLOR setColor)
+void Application::setSelectedColor(Color setColor)
 {
 	m_SelectedColor = setColor;
 }
@@ -379,7 +411,7 @@ void Application::handlePackage(Package unpackedData, uint16 msgType)
 		SHAPE_TYPE shpType = SHAPE_TYPE::FREEDRAW;
 
 		Drawing sentShape;
-		sentShape.CreateFreedraw(realData.pointPositions);
+		//sentShape.CreateShape(Vector2f(realData.initialPosX, realData.initialPosY), shpType);
 		sentShape.SetColor(realData.colorID);
 		m_ShapeList.push_back(sentShape);
 		std::cout << "Shape sync by server." << endl;
@@ -392,7 +424,7 @@ void Application::sendShape()
 {
 	Vector2f startingPos = m_PreviewShape.getStartingPos();
 	Vector2f finalPos = m_PreviewShape.getFinalPos();
-	uint16 colorID = m_PreviewShape.getColorID();
+	Color colorID = m_PreviewShape.getColorID();
 	switch (m_ActualShape)
 	{
 	case SHAPE_TYPE::LINE:
