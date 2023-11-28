@@ -20,7 +20,8 @@ namespace E {
 		kCREATE_RECTANGLE, // Done
 		kCREATE_CIRCLE, // Done
 		kCREATE_FREEDRAW,
-		kSYNC_USER
+		kSYNC_USER,
+		kUNDO_MESSAGE
 	};
 }
 
@@ -285,13 +286,14 @@ public:
 	MsgCreateLine(Package data) {
 		unpackData(&m_msgData, data.data(), data.size());
 	};
-	MsgCreateLine(float iniPosX, float iniPosY, float finPosX, float finPosY, Color colorID)
+	MsgCreateLine(float iniPosX, float iniPosY, float finPosX, float finPosY, Color colorID, unsigned int messageID = 0)
 	{
 		m_msgData.initialPosX = iniPosX;
 		m_msgData.initialPosY = iniPosY;
 		m_msgData.finalPosX = finPosX;
 		m_msgData.finalPosY = finPosY;
 		m_msgData.colorID = colorID;
+		m_msgData.messageID = messageID;
 	};
 	virtual ~MsgCreateLine() = default;
 
@@ -324,6 +326,7 @@ public:
 		float finalPosX;
 		float finalPosY;
 		Color colorID;
+		unsigned int messageID;
 	} m_msgData;
 };
 
@@ -334,13 +337,14 @@ public:
 	MsgCreateRectangle(Package data) {
 		unpackData(&m_msgData, data.data(), data.size());
 	};
-	MsgCreateRectangle(float iniPosX, float iniPosY, float finPosX, float finPosY, Color colorID)
+	MsgCreateRectangle(float iniPosX, float iniPosY, float finPosX, float finPosY, Color colorID, unsigned int messageID = 0)
 	{
 		m_msgData.initialPosX = iniPosX;
 		m_msgData.initialPosY = iniPosY;
 		m_msgData.finalPosX = finPosX;
 		m_msgData.finalPosY = finPosY;
 		m_msgData.colorID = colorID;
+		m_msgData.messageID = messageID;
 	};
 	virtual ~MsgCreateRectangle() = default;
 
@@ -372,6 +376,7 @@ public:
 		float finalPosX;
 		float finalPosY;
 		Color colorID;
+		unsigned int messageID;
 	} m_msgData;
 };
 
@@ -383,13 +388,14 @@ public:
 	{
 		unpackData(&m_msgData, data.data(), data.size());
 	};
-	MsgCreateCircle(float iniPosX, float iniPosY, float finPosX, float finPosY, Color colorID)
+	MsgCreateCircle(float iniPosX, float iniPosY, float finPosX, float finPosY, Color colorID, unsigned int messageID = 0)
 	{
 		m_msgData.initialPosX = iniPosX;
 		m_msgData.initialPosY = iniPosY;
 		m_msgData.finalPosX = finPosX;
 		m_msgData.finalPosY = finPosY;
 		m_msgData.colorID = colorID;
+		m_msgData.messageID = messageID;
 	};
 	virtual ~MsgCreateCircle() = default;
 
@@ -422,6 +428,7 @@ public:
 		float finalPosX;
 		float finalPosY;
 		Color colorID;
+		unsigned int messageID;
 	} m_msgData;
 };
 
@@ -429,13 +436,14 @@ class MsgCreateFreedraw : public NetworkMessage
 {
 public:
 	MsgCreateFreedraw() = default;
-	MsgCreateFreedraw(float iniPosX, float iniPosY, float finPosX, float finPosY, Color colorID)
+	MsgCreateFreedraw(float iniPosX, float iniPosY, float finPosX, float finPosY, Color colorID, unsigned int messageID = 0)
 	{
 		m_msgData.initialPosX = iniPosX;
 		m_msgData.initialPosY = iniPosY;
 		m_msgData.finalPosX = finPosX;
 		m_msgData.finalPosY = finPosY;
 		m_msgData.colorID = colorID;
+		m_msgData.messageID = messageID;
 	};
 	~MsgCreateFreedraw() = default;
 
@@ -468,6 +476,7 @@ public:
 		float finalPosX;
 		float finalPosY;
 		Color colorID;
+		unsigned int messageID;
 	} m_msgData;
 };
 
@@ -497,4 +506,37 @@ public:
 
 public:
 	string m_msgData = "SYNCING";
+};
+
+class MsgUndoMessage : public NetworkMessage
+{
+public:
+	Package packData() override
+	{
+		MESSAGE_TYPE_VAR MSGTYPE = E::kUNDO_MESSAGE;
+		Package data;
+		data.resize(m_msgData.message.size() + sizeof(m_msgData.message) + sizeof(MESSAGE_TYPE_VAR));
+		memcpy(data.data(), &MSGTYPE, sizeof(MESSAGE_TYPE_VAR));
+		memcpy(data.data() + sizeof(MESSAGE_TYPE_VAR), &m_msgData, sizeof(m_msgData));
+		return data;
+	}
+
+	bool unpackData(void* pSrcData, void* pDestData, size_t numBytes) override
+	{
+		if (numBytes != (m_msgData.message.size() + sizeof(m_msgData.message)))
+		{
+			return false;
+		}
+
+		memcpy(pDestData, pSrcData, numBytes);
+		return true;
+	}
+
+public:
+	struct UndoData 
+	{
+		string message = "UNDO";
+		unsigned int messageID;
+	} m_msgData;
+	
 };

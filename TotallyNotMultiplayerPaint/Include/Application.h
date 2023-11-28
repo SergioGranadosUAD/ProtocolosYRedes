@@ -46,7 +46,8 @@ public:
 	void Render();
 	
 	void handlePackage(Package unpackedData, uint16 msgType);
-	void sendShape();
+	void sendRegularShape();
+	void sendFreedraw(const Vector2f& startingPos, const Vector2f& finalPos);
 
 	bool isRunning() const { return m_Window.isOpen(); };
 private:

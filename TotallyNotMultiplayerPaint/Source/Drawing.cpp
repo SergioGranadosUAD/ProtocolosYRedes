@@ -134,6 +134,7 @@ bool Drawing::isValidLine(const Vector2f& initialPos, const Vector2f& finalPos)
 
 void Drawing::SetColor(Color colorID)
 {
+	m_colorID = colorID;
 	if (m_ShapeType == SHAPE_TYPE::FREEDRAW) 
 	{
 		for (int i = 0; i < m_pFreeLineShape->size(); ++i) 

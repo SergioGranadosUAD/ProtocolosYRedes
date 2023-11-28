@@ -22,13 +22,15 @@ struct Client
 {
 	optional<IpAddress> userIp;
 	uint16 userPort;
+	uint32 clientID;
 };
 
 struct PackageInformation 
 {
 	Package pack;
 	uint16 msgType;
-	size_t packageID;
+	uint32 packageID;
+	uint32 senderID;
 };
 
 class NetworkServer : public NetworkRole
@@ -62,6 +64,10 @@ public:
 	void sendMessageToAllUsers(NetworkMessage* message, E::NETWORK_MSG& typeToSend, const Client& messageSender);
 	void saveMessageToSyncList(const Package& unpackedData, const uint16& msgType);
 	bool checkForNewMessage();
+	void sendLine(Package& unpackedData, const uint32& packageID, const Client& messageSender, const uint16& msgType, bool isSyncMessage);
+	void sendRectangle(Package& unpackedData, const uint32& packageID, const Client& messageSender, const uint16& msgType, bool isSyncMessage);
+	void sendCircle(Package& unpackedData, const uint32& packageID, const Client& messageSender, const uint16& msgType, bool isSyncMessage);
+	void sendFreedraw(Package& unpackedData, const uint32& packageID, const Client& messageSender, const uint16& msgType, bool isSyncMessage);
 
 	inline bool isRunning() { return m_isRunning; };
 
@@ -75,7 +81,8 @@ private:
 	UdpSocket socket;
 
 	Clock m_newMessageTimer;
-	size_t m_messageIDCount = 0;
+	uint32 m_messageIDCount = 0;
+	uint32 m_clientIDCount = 0;
 };
 
 template<typename T>

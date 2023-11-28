@@ -222,13 +222,16 @@ void Application::HandleInput()
 				m_MouseButtonDown = false;
 				if (m_ActualShape == SHAPE_TYPE::FREEDRAW)
 				{
-					m_FreedrawList.push_back(Vertex(GetMousePosition(), m_SelectedColor));
+					Vector2f latestVectorPosition = m_FreedrawList[m_FreedrawList.size() - 1].position;
+					Vector2f actualVectorPosition = GetMousePosition();
+					m_FreedrawList.push_back(Vertex(actualVectorPosition, m_SelectedColor));
+					sendFreedraw(latestVectorPosition, actualVectorPosition);
 					break;
 				}
 
 				m_PreviewShape.SetColor(m_SelectedColor);
 				m_ShapeList.push_back(m_PreviewShape);
-				sendShape();
+				sendRegularShape();
 				m_PreviewShape.Reset();
 			}
 			break;
@@ -240,10 +243,12 @@ void Application::HandleInput()
 				}
 
 				Vector2f latestVectorPosition = m_FreedrawList[m_FreedrawList.size() - 1].position;
-				if (latestVectorPosition != GetMousePosition())
+				Vector2f actualVectorPosition = GetMousePosition();
+				if (latestVectorPosition != actualVectorPosition)
 				{
-					m_FreedrawList.push_back(Vertex(GetMousePosition(), m_SelectedColor));
-					m_FreedrawList.push_back(Vertex(GetMousePosition(), m_SelectedColor));
+					m_FreedrawList.push_back(Vertex(actualVectorPosition, m_SelectedColor));
+					m_FreedrawList.push_back(Vertex(actualVectorPosition, m_SelectedColor));
+					sendFreedraw(latestVectorPosition, actualVectorPosition);
 					break;
 				}
 			}
@@ -410,17 +415,17 @@ void Application::handlePackage(Package unpackedData, uint16 msgType)
 
 		SHAPE_TYPE shpType = SHAPE_TYPE::FREEDRAW;
 
-		Drawing sentShape;
-		//sentShape.CreateShape(Vector2f(realData.initialPosX, realData.initialPosY), shpType);
-		sentShape.SetColor(realData.colorID);
-		m_ShapeList.push_back(sentShape);
-		std::cout << "Shape sync by server." << endl;
+		Vector2f initialPos(realData.initialPosX, realData.initialPosY);
+		Vector2f finalPos(realData.finalPosX, realData.finalPosY);
+		m_FreedrawList.push_back(Vertex(initialPos, realData.colorID));
+		m_FreedrawList.push_back(Vertex(finalPos, realData.colorID));
+		//std::cout << "Shape sync by server." << endl;
 	}
 	break;
 	}
 }
 
-void Application::sendShape()
+void Application::sendRegularShape()
 {
 	Vector2f startingPos = m_PreviewShape.getStartingPos();
 	Vector2f finalPos = m_PreviewShape.getFinalPos();
@@ -445,12 +450,12 @@ void Application::sendShape()
 		m_client.sendMessage(&msg, E::kCREATE_CIRCLE);
 	}
 	break;
-	case SHAPE_TYPE::FREEDRAW:
-	{
-		MsgCreateFreedraw msg(startingPos.x, startingPos.y, finalPos.x, finalPos.y, colorID);
-		m_client.sendMessage(&msg, E::kCREATE_FREEDRAW);
 	}
-	break;
-	}
+}
+
+void Application::sendFreedraw(const Vector2f& startingPos, const Vector2f& finalPos)
+{
+	MsgCreateFreedraw msg(startingPos.x, startingPos.y, finalPos.x, finalPos.y, m_SelectedColor);
+	m_client.sendMessage(&msg, E::kCREATE_FREEDRAW);
 }
 
