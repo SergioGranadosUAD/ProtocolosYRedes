@@ -409,11 +409,11 @@ void NetworkServer::sendLine(Package& unpackedData, const uint32& packageID, con
 	MsgCreateLine message;
 	MsgCreateLine::LineData realData;
 	message.unpackData(unpackedData.data(), &realData, unpackedData.size());
-	message.m_msgData.messageID = packageID;
 
 	cout << "Shape created by user." << endl;
 	E::NETWORK_MSG typeToSend = static_cast<E::NETWORK_MSG>(msgType);
 	message.m_msgData = realData;
+	message.m_msgData.messageID = packageID;
 
 	if (isSyncMessage)
 	{
@@ -430,11 +430,11 @@ void NetworkServer::sendRectangle(Package& unpackedData, const uint32& packageID
 	MsgCreateRectangle message;
 	MsgCreateRectangle::RectangleData realData;
 	message.unpackData(unpackedData.data(), &realData, unpackedData.size());
-	message.m_msgData.messageID = packageID;
 
 	cout << "Shape created by user." << endl;
 	E::NETWORK_MSG typeToSend = static_cast<E::NETWORK_MSG>(msgType);
 	message.m_msgData = realData;
+	message.m_msgData.messageID = packageID;
 
 	if (isSyncMessage)
 	{
@@ -451,12 +451,12 @@ void NetworkServer::sendCircle(Package& unpackedData, const uint32& packageID, c
 	MsgCreateCircle message;
 	MsgCreateCircle::CircleData realData;
 	message.unpackData(unpackedData.data(), &realData, unpackedData.size());
-	message.m_msgData.messageID = packageID;
 
 	cout << "Shape created by user." << endl;
 
 	E::NETWORK_MSG typeToSend = static_cast<E::NETWORK_MSG>(msgType);
 	message.m_msgData = realData;
+	message.m_msgData.messageID = packageID;
 
 	if (isSyncMessage)
 	{
@@ -473,10 +473,10 @@ void NetworkServer::sendFreedraw(Package& unpackedData, const uint32& packageID,
 	MsgCreateFreedraw message;
 	MsgCreateFreedraw::FreedrawData realData;
 	message.unpackData(unpackedData.data(), &realData, unpackedData.size());
-	message.m_msgData.messageID = packageID;
 
 	E::NETWORK_MSG typeToSend = static_cast<E::NETWORK_MSG>(msgType);
 	message.m_msgData = realData;
+	message.m_msgData.messageID = packageID;
 
 	if (isSyncMessage)
 	{

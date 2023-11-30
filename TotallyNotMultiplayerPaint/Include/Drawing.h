@@ -45,6 +45,7 @@ public:
 	bool isValidLine(const Vector2f& initialPos, const Vector2f& finalPos);
 
 	void SetColor(Color colorID);
+	void setShapeID(const unsigned int& shapeID);
 private:
 	Shape* m_pBaseShape;
 	vector<Vertex>* m_pFreeLineShape;

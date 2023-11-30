@@ -148,3 +148,8 @@ void Drawing::SetColor(Color colorID)
 	m_pBaseShape->setOutlineColor(colorID);
 }
 
+void Drawing::setShapeID(const unsigned int& shapeID)
+{
+	m_shapeID = shapeID;
+}
+

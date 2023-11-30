@@ -386,6 +386,7 @@ void Application::handlePackage(Package unpackedData, uint16 msgType)
 		sentShape.CreateShape(Vector2f(realData.initialPosX, realData.initialPosY), shpType);
 		sentShape.Update(Vector2f(realData.finalPosX, realData.finalPosY));
 		sentShape.SetColor(realData.colorID);
+		sentShape.setShapeID(realData.messageID);
 		m_ShapeList.push_back(sentShape);
 
 		std::cout << "Shape sync by server." << endl;
@@ -403,7 +404,9 @@ void Application::handlePackage(Package unpackedData, uint16 msgType)
 		sentShape.CreateShape(Vector2f(realData.initialPosX, realData.initialPosY), shpType);
 		sentShape.Update(Vector2f(realData.finalPosX, realData.finalPosY));
 		sentShape.SetColor(realData.colorID);
+		sentShape.setShapeID(realData.messageID);
 		m_ShapeList.push_back(sentShape);
+		
 
 		std::cout << "Shape sync by server." << endl;
 	}
@@ -420,6 +423,7 @@ void Application::handlePackage(Package unpackedData, uint16 msgType)
 		sentShape.CreateShape(Vector2f(realData.initialPosX, realData.initialPosY), shpType);
 		sentShape.Update(Vector2f(realData.finalPosX, realData.finalPosY));
 		sentShape.SetColor(realData.colorID);
+		sentShape.setShapeID(realData.messageID);
 		m_ShapeList.push_back(sentShape);
 
 		std::cout << "Shape sync by server." << endl;
@@ -453,7 +457,7 @@ void Application::handlePackage(Package unpackedData, uint16 msgType)
 		string idValue;
 
 		stringstream ss(realData);
-		ss << undo << idValue;
+		ss >> undo >> idValue;
 
 		uint32 messageID = stoi(idValue);
 
