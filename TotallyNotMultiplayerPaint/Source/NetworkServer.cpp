@@ -338,7 +338,7 @@ void NetworkServer::connectUser(const UnconnectedClient* messageSender)
 
 bool NetworkServer::isUserValid(const UnconnectedClient* messageSender)
 {
-	for (auto dict : m_registeredUsers)
+	for (auto& dict : m_registeredUsers)
 	{
 		if (dict.first == messageSender->userName && dict.second == messageSender->userPass)
 		{
@@ -351,7 +351,7 @@ bool NetworkServer::isUserValid(const UnconnectedClient* messageSender)
 
 bool NetworkServer::findUsername(const string& username)
 {
-	for (auto dict : m_registeredUsers)
+	for (auto& dict : m_registeredUsers)
 	{
 		if (dict.first == username)
 		{

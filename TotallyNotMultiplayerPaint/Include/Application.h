@@ -33,6 +33,13 @@ using sf::Angle;
 using sf::Vertex;
 using sf::radians;
 
+struct Line
+{
+	Vertex initialPos;
+	Vertex finalPos;
+	uint32 shapeID;
+};
+
 class Application {
 public:
 	Application();
@@ -48,12 +55,17 @@ public:
 	void handlePackage(Package unpackedData, uint16 msgType);
 	void sendRegularShape();
 	void sendFreedraw(const Vector2f& startingPos, const Vector2f& finalPos);
+	
+	//void removeRegularShape(const uint32& id);
+	//void removeFreedraw(const uint32& id);
 
+	inline Line* getLatestFreedraw() { return &m_FreedrawList[m_FreedrawList.size() - 1]; };
 	bool isRunning() const { return m_Window.isOpen(); };
 private:
 	RenderWindow m_Window;
 	vector<Drawing> m_ShapeList;
-	vector<Vertex> m_FreedrawList;
+	vector<Line> m_FreedrawList;
+	uint32 m_drawingIDCount;
 	SHAPE_TYPE m_ActualShape;
 	Drawing m_PreviewShape;
 	bool m_MouseButtonDown;
