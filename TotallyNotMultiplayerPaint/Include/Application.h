@@ -4,10 +4,14 @@
 #include <iostream>
 #include <vector>
 #include <math.h>
+#include <sstream>
 #include "Button.h"
 #include "Drawing.h"
 #include "NetworkClient.h"
 #include "NetworkMessage.h"
+
+#define DRAWING_SHAPE true
+#define FREEDRAW_SHAPE false
 
 const int BITS_PER_PIXEL = 32;
 const int DEFAULT_WIDTH = 800;
@@ -18,6 +22,8 @@ using std::cout;
 using std::cin;
 using std::endl;
 using std::vector;
+using std::stringstream;
+using std::stoi;
 
 using sf::RenderWindow;
 using sf::VideoMode;
@@ -55,9 +61,8 @@ public:
 	void handlePackage(Package unpackedData, uint16 msgType);
 	void sendRegularShape();
 	void sendFreedraw(const Vector2f& startingPos, const Vector2f& finalPos);
-	
-	//void removeRegularShape(const uint32& id);
-	//void removeFreedraw(const uint32& id);
+	void removeLatestElementAdded();
+	void removeShapeFromID(const uint32& id);
 
 	inline Line* getLatestFreedraw() { return &m_FreedrawList[m_FreedrawList.size() - 1]; };
 	bool isRunning() const { return m_Window.isOpen(); };
@@ -65,7 +70,7 @@ private:
 	RenderWindow m_Window;
 	vector<Drawing> m_ShapeList;
 	vector<Line> m_FreedrawList;
-	uint32 m_drawingIDCount;
+	vector<bool> m_latestElementAdded;
 	SHAPE_TYPE m_ActualShape;
 	Drawing m_PreviewShape;
 	bool m_MouseButtonDown;

@@ -119,6 +119,12 @@ void NetworkServer::sendMessage(NetworkMessage* message, E::NETWORK_MSG messageT
 		connectData = msgObject->packData();
 	}
 	break;
+	case E::kUNDO_MESSAGE:
+	{
+		MsgUndo* msgObject = reinterpret_cast<MsgUndo*>(message);
+		connectData = msgObject->packData();
+	}
+	break;
 	}
 	Package finalPackage = getPackage(connectData.data(), connectData.size());
 
@@ -242,25 +248,25 @@ void NetworkServer::syncUser(PackageInformation& packageInfo, Client& messageSen
 	{
 	case E::kCREATE_LINE:
 	{
-		saveMessageToSyncList(unpackedData, msgType);
+		//saveMessageToSyncList(unpackedData, msgType);
 		sendLine(unpackedData, packageID, messageSender, msgType, true);
 	}
 	break;
 	case E::kCREATE_RECTANGLE:
 	{
-		saveMessageToSyncList(unpackedData, msgType);
+		//saveMessageToSyncList(unpackedData, msgType);
 		sendRectangle(unpackedData, packageID, messageSender, msgType, true);
 	}
 	break;
 	case E::kCREATE_CIRCLE:
 	{
-		saveMessageToSyncList(unpackedData, msgType);
+		//saveMessageToSyncList(unpackedData, msgType);
 		sendCircle(unpackedData, packageID, messageSender, msgType, true);
 	}
 	break;
 	case E::kCREATE_FREEDRAW:
 	{
-		saveMessageToSyncList(unpackedData, msgType);
+		//saveMessageToSyncList(unpackedData, msgType);
 		sendFreedraw(unpackedData, packageID, messageSender, msgType, true);
 	}
 	break;
@@ -332,7 +338,7 @@ void NetworkServer::connectUser(const UnconnectedClient* messageSender)
 
 	MsgConnected message;
 	sendMessage(&message, E::kCONNECTION_SUCCESSFUL, newClient);
-	cout << "Usuario conectado:" << newClient.userIp.value() << ":" << newClient.userPort << endl;
+	cout << "Usuario conectado:" << newClient.userIp.value() << ":" << newClient.userPort << ", ID: " << newClient.clientID << endl;
 	return;
 }
 
@@ -375,13 +381,14 @@ void NetworkServer::sendMessageToAllUsers(NetworkMessage* message, E::NETWORK_MS
 	}
 }
 
-void NetworkServer::saveMessageToSyncList(const Package& unpackedData, const uint16& msgType)
+void NetworkServer::saveMessageToSyncList(const Package& unpackedData, const uint16& msgType, const uint32& userID)
 {
 	++m_messageIDCount;
 	PackageInformation dataToStore;
 	dataToStore.pack = unpackedData;
 	dataToStore.msgType = msgType;
 	dataToStore.packageID = m_messageIDCount;
+	dataToStore.senderID = userID;
 	m_boardSyncStorage.push_back(dataToStore);
 }
 
@@ -481,6 +488,35 @@ void NetworkServer::sendFreedraw(Package& unpackedData, const uint32& packageID,
 	}
 }
 
+uint32 NetworkServer::getClientID(const Client& messageSender)
+{
+	for (int i = 0; i < m_userList.size(); i++)
+	{
+		if (messageSender.userIp.value() == m_userList[i].userIp.value() &&
+			messageSender.userPort == m_userList[i].userPort)
+		{
+			return m_userList[i].clientID;
+		}
+	}
+	return 0;
+}
+
+uint32 NetworkServer::removeLatestPackageFromList(const uint32& clientID)
+{
+	uint32 packageID = 0;
+	for (auto it = m_boardSyncStorage.rbegin(); it != m_boardSyncStorage.rend(); ++it)
+	{
+		auto& cl = *it;
+		if (cl.senderID == clientID)
+		{
+			packageID = cl.packageID;
+			m_boardSyncStorage.erase((it + 1).base());
+			break;
+		}
+	}
+	return packageID;
+}
+
 void NetworkServer::handlePackage(Package& unpackedData, const uint16& msgType, Client& messageSender)
 {
 	switch (msgType) {
@@ -576,25 +612,29 @@ void NetworkServer::handlePackage(Package& unpackedData, const uint16& msgType, 
 	break;
 	case E::kCREATE_LINE:
 	{
-		saveMessageToSyncList(unpackedData, msgType);
+		uint32 clientID = getClientID(messageSender);
+		saveMessageToSyncList(unpackedData, msgType, clientID);
 		sendLine(unpackedData, m_messageIDCount, messageSender, msgType, false);
 	}
 	break;
 	case E::kCREATE_RECTANGLE:
 	{
-		saveMessageToSyncList(unpackedData, msgType);
+		uint32 clientID = getClientID(messageSender);
+		saveMessageToSyncList(unpackedData, msgType, clientID);
 		sendRectangle(unpackedData, m_messageIDCount, messageSender, msgType, false);
 	}
 	break;
 	case E::kCREATE_CIRCLE:
 	{
-		saveMessageToSyncList(unpackedData, msgType);
+		uint32 clientID = getClientID(messageSender);
+		saveMessageToSyncList(unpackedData, msgType, clientID);
 		sendCircle(unpackedData, m_messageIDCount, messageSender, msgType, false);
 	}
 	break;
 	case E::kCREATE_FREEDRAW:
 	{
-		saveMessageToSyncList(unpackedData, msgType);
+		uint32 clientID = getClientID(messageSender);
+		saveMessageToSyncList(unpackedData, msgType, clientID);
 		sendFreedraw(unpackedData, m_messageIDCount, messageSender, msgType, false);
 	}
 	break;
@@ -604,6 +644,16 @@ void NetworkServer::handlePackage(Package& unpackedData, const uint16& msgType, 
 		{
 			syncUser(m_boardSyncStorage[i], messageSender);
 		}
+	}
+	break;
+	case E::kUNDO_MESSAGE:
+	{
+		uint32 clientID = getClientID(messageSender);
+		uint32 removedPackageID = removeLatestPackageFromList(clientID);
+
+		MsgUndo msg(removedPackageID);
+		E::NETWORK_MSG typeToSend = E::kUNDO_MESSAGE;
+		sendMessageToAllUsers(&msg, typeToSend, messageSender);
 	}
 	break;
 	default:

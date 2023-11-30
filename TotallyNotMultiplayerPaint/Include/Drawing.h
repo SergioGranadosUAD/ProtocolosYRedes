@@ -41,6 +41,7 @@ public:
 	inline Vector2f getStartingPos() { return m_StartingPosition; };
 	inline Vector2f getFinalPos() { return m_FinalPosition; };
 	inline Color getColorID() { return m_colorID; };
+	inline unsigned int getShapeID() { return m_shapeID; };
 	bool isValidLine(const Vector2f& initialPos, const Vector2f& finalPos);
 
 	void SetColor(Color colorID);
@@ -50,6 +51,7 @@ private:
 	SHAPE_TYPE m_ShapeType;
 	Vector2f m_StartingPosition;
 	Vector2f m_FinalPosition;
+	unsigned int m_shapeID;
 	Color m_colorID;
 	bool m_ShapeCreated;
 };

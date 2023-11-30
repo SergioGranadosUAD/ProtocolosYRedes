@@ -6,7 +6,8 @@ Drawing::Drawing() :
 	m_ShapeType(SHAPE_TYPE::LINE),
 	m_ShapeCreated(false),
 	m_pFreeLineShape(nullptr),
-	m_colorID(0)
+	m_colorID(0),
+	m_shapeID(0)
 {
 
 }

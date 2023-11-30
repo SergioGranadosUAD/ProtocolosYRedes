@@ -2,6 +2,7 @@
 #include <SFML/Graphics.hpp>
 #include <vector>
 #include <string>
+#include <iostream>
 
 #define MESSAGE_TYPE_VAR unsigned short
 
@@ -27,6 +28,7 @@ namespace E {
 
 using std::string;
 using std::vector;
+using std::to_string;
 using sf::Color;
 using Package = vector<char>;
 
@@ -508,35 +510,41 @@ public:
 	string m_msgData = "SYNCING";
 };
 
-class MsgUndoMessage : public NetworkMessage
+class MsgUndo : public NetworkMessage
 {
 public:
+	MsgUndo() = default;
+	MsgUndo(unsigned int packageID)
+	{
+		m_msgData.append(" ");
+		m_msgData.append(to_string(packageID));
+	}
+	
 	Package packData() override
 	{
 		MESSAGE_TYPE_VAR MSGTYPE = E::kUNDO_MESSAGE;
 		Package data;
-		data.resize(m_msgData.message.size() + sizeof(m_msgData.message) + sizeof(MESSAGE_TYPE_VAR));
+		data.resize(m_msgData.size() + sizeof(MESSAGE_TYPE_VAR));
 		memcpy(data.data(), &MSGTYPE, sizeof(MESSAGE_TYPE_VAR));
-		memcpy(data.data() + sizeof(MESSAGE_TYPE_VAR), &m_msgData, sizeof(m_msgData));
+		memcpy(data.data() + sizeof(MESSAGE_TYPE_VAR), m_msgData.data(), m_msgData.size());
 		return data;
 	}
 
 	bool unpackData(void* pSrcData, void* pDestData, size_t numBytes) override
 	{
-		if (numBytes != (m_msgData.message.size() + sizeof(m_msgData.message)))
+		string test(static_cast<char*>(pDestData));
+		test.resize(numBytes);
+		if (numBytes < sizeof(char))
 		{
 			return false;
 		}
 
-		memcpy(pDestData, pSrcData, numBytes);
+		//memcpy(pDestData, pSrcData, numBytes);
+		pSrcData = &test;
 		return true;
 	}
 
 public:
-	struct UndoData 
-	{
-		string message = "UNDO";
-		unsigned int messageID;
-	} m_msgData;
+	string m_msgData = "UNDO";
 	
 };

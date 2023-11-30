@@ -124,6 +124,12 @@ void NetworkClient::sendMessage(NetworkMessage* message, E::NETWORK_MSG messageT
 		connectData = msgObject->packData();
 	}
 		break;
+	case E::kUNDO_MESSAGE:
+	{
+		MsgUndo* msgObject = reinterpret_cast<MsgUndo*>(message);
+		connectData = msgObject->packData();
+	}
+		break;
 	}
 	Package finalPackage = getPackage(connectData.data(), connectData.size());
 

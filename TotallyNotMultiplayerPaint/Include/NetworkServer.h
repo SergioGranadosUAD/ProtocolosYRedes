@@ -62,12 +62,14 @@ public:
 	bool isUserValid(const UnconnectedClient* messageSender);
 	bool findUsername(const string& username);
 	void sendMessageToAllUsers(NetworkMessage* message, E::NETWORK_MSG& typeToSend, const Client& messageSender);
-	void saveMessageToSyncList(const Package& unpackedData, const uint16& msgType);
+	void saveMessageToSyncList(const Package& unpackedData, const uint16& msgType, const uint32& userID);
 	bool checkForNewMessage();
 	void sendLine(Package& unpackedData, const uint32& packageID, const Client& messageSender, const uint16& msgType, bool isSyncMessage);
 	void sendRectangle(Package& unpackedData, const uint32& packageID, const Client& messageSender, const uint16& msgType, bool isSyncMessage);
 	void sendCircle(Package& unpackedData, const uint32& packageID, const Client& messageSender, const uint16& msgType, bool isSyncMessage);
 	void sendFreedraw(Package& unpackedData, const uint32& packageID, const Client& messageSender, const uint16& msgType, bool isSyncMessage);
+	uint32 getClientID(const Client& messageSender);
+	uint32 removeLatestPackageFromList(const uint32& clientID);
 
 	inline bool isRunning() { return m_isRunning; };
 
