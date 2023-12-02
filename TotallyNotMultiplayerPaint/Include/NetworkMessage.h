@@ -9,12 +9,7 @@
 namespace E {
 	enum NETWORK_MSG {
 		kERROR = 0,
-		kLOGIN_REQUEST, // Done
-		kSIGNUP_REQUEST,
-		kUSERNAME_REQUEST, // Done
-		kUSERNAME_SENT, // Done
-		kPASSWORD_REQUEST, // Done
-		kPASSWORD_SENT, // Done
+		kCONNECT, // Done
 		kCONNECTION_SUCCESSFUL, // Done
 		kDISCONNECTION, // Done
 		kCREATE_LINE, // Done
@@ -39,15 +34,20 @@ public:
 	NetworkMessage() = default;
 	virtual ~NetworkMessage() = default;
 	virtual Package packData() = 0;
-	virtual bool unpackData(void* pSrcData, void* pDestData, size_t numBytes) = 0;
 };
 
-class MsgConnectRequest : public NetworkMessage
+class MsgConnect : public NetworkMessage
 {
 public:
+	MsgConnect() = default;
+	MsgConnect(string loginMode, string username, string password)
+	{
+		m_msgData = loginMode + " " + username + " " + password;
+	}
+
 	Package packData() override
 	{
-		MESSAGE_TYPE_VAR MSGTYPE = E::kLOGIN_REQUEST;
+		MESSAGE_TYPE_VAR MSGTYPE = E::kCONNECT;
 		Package data;
 		data.resize(m_msgData.size() + sizeof(MESSAGE_TYPE_VAR));
 		memcpy(data.data(), &MSGTYPE, sizeof(MESSAGE_TYPE_VAR));
@@ -55,170 +55,15 @@ public:
 		return data;
 	}
 
-	bool unpackData(void* pSrcData, void* pDestData, size_t numBytes) override
+	static bool unpackData(void* pSrcData, void* pDestData, size_t numBytes)
 	{
-		if (numBytes != m_msgData.size())
+		if (numBytes != sizeof(m_msgData))
 		{
 			return false;
 		}
 
 		memcpy(pDestData, pSrcData, numBytes);
 
-		return true;
-	}
-
-public:
-	const string m_msgData = "CONNECT";
-};
-
-class MsgSignupRequest : public NetworkMessage
-{
-public:
-	Package packData() override
-	{
-		MESSAGE_TYPE_VAR MSGTYPE = E::kSIGNUP_REQUEST;
-		Package data;
-		data.resize(m_msgData.size() + sizeof(MESSAGE_TYPE_VAR));
-		memcpy(data.data(), &MSGTYPE, sizeof(MESSAGE_TYPE_VAR));
-		memcpy(data.data() + sizeof(MESSAGE_TYPE_VAR), m_msgData.data(), m_msgData.size());
-		return data;
-	}
-
-	bool unpackData(void* pSrcData, void* pDestData, size_t numBytes) override
-	{
-		if (numBytes != m_msgData.size())
-		{
-			return false;
-		}
-
-		memcpy(pDestData, pSrcData, numBytes);
-
-		return true;
-	}
-
-public:
-	const string m_msgData = "SIGNUP";
-};
-
-class MsgUsernameRequest : public NetworkMessage
-{
-public:
-	Package packData() override
-	{
-		MESSAGE_TYPE_VAR MSGTYPE = E::kUSERNAME_REQUEST;
-		Package data;
-		data.resize(m_msgData.size() + sizeof(MESSAGE_TYPE_VAR));
-		memcpy(data.data(), &MSGTYPE, sizeof(MESSAGE_TYPE_VAR));
-		memcpy(data.data() + sizeof(MESSAGE_TYPE_VAR), m_msgData.data(), m_msgData.size());
-		return data;
-	}
-
-	bool unpackData(void* pSrcData, void* pDestData, size_t numBytes) override
-	{
-		if (numBytes != m_msgData.size())
-		{
-			return false;
-		}
-
-		memcpy(pDestData, pSrcData, numBytes);
-		return true;
-	}
-
-public:
-	const string m_msgData = "USER";
-};
-
-class MsgUsernameSent : public NetworkMessage
-{
-public:
-	MsgUsernameSent() = default;
-	MsgUsernameSent(string msgData) : m_msgData(msgData) {};
-	~MsgUsernameSent() = default;
-
-	Package packData() override
-	{
-		MESSAGE_TYPE_VAR MSGTYPE = E::kUSERNAME_SENT;
-		Package data;
-		data.resize(m_msgData.size() + sizeof(MESSAGE_TYPE_VAR));
-		memcpy(data.data(), &MSGTYPE, sizeof(MESSAGE_TYPE_VAR));
-		memcpy(data.data() + sizeof(MESSAGE_TYPE_VAR), m_msgData.data(), m_msgData.size());
-		return data;
-	}
-
-	bool unpackData(void* pSrcData, void* pDestData, size_t numBytes) override
-	{
-		string test(static_cast<char*>(pDestData));
-		test.resize(numBytes);
-		if (numBytes < sizeof(char))
-		{
-			return false;
-		}
-
-		//memcpy(pDestData, pSrcData, numBytes);
-		pSrcData = &test;
-		return true;
-	}
-
-public:
-	string m_msgData;
-};
-
-class MsgPasswordRequest : public NetworkMessage
-{
-public:
-	Package packData() override
-	{
-		MESSAGE_TYPE_VAR MSGTYPE = E::kPASSWORD_REQUEST;
-		Package data;
-		data.resize(m_msgData.size() + sizeof(MESSAGE_TYPE_VAR));
-		memcpy(data.data(), &MSGTYPE, sizeof(MESSAGE_TYPE_VAR));
-		memcpy(data.data() + sizeof(MESSAGE_TYPE_VAR), m_msgData.data(), m_msgData.size());
-		return data;
-	}
-
-	bool unpackData(void* pSrcData, void* pDestData, size_t numBytes) override
-	{
-		if (numBytes != m_msgData.size())
-		{
-			return false;
-		}
-
-		memcpy(pDestData, pSrcData, numBytes);
-		return true;
-	}
-
-public:
-	string m_msgData = "PASSWORD";
-};
-
-class MsgPasswordSent : public NetworkMessage
-{
-public:
-	MsgPasswordSent() = default;
-	MsgPasswordSent(string msgData) : m_msgData(msgData) {};
-	~MsgPasswordSent() = default;
-
-	Package packData() override
-	{
-		MESSAGE_TYPE_VAR MSGTYPE = E::kPASSWORD_SENT;
-		Package data;
-		data.resize(m_msgData.size() + sizeof(MESSAGE_TYPE_VAR));
-		memcpy(data.data(), &MSGTYPE, sizeof(MESSAGE_TYPE_VAR));
-		memcpy(data.data() + sizeof(MESSAGE_TYPE_VAR), m_msgData.data(), m_msgData.size());
-		return data;
-	}
-
-	bool unpackData(void* pSrcData, void* pDestData, size_t numBytes) override
-	{
-		string test(static_cast<char*>(pDestData));
-		test.resize(numBytes);
-		if (numBytes < sizeof(char))
-		{
-			return false;
-		}
-
-		//memcpy(pDestData, pSrcData, numBytes);
-		pSrcData = &test;
 		return true;
 	}
 
@@ -239,7 +84,7 @@ public:
 		return data;
 	}
 
-	bool unpackData(void* pSrcData, void* pDestData, size_t numBytes) override
+	bool unpackData(void* pSrcData, void* pDestData, size_t numBytes)
 	{
 		if (numBytes != m_msgData.size())
 		{
@@ -267,7 +112,7 @@ public:
 		return data;
 	}
 
-	bool unpackData(void* pSrcData, void* pDestData, size_t numBytes) override
+	bool unpackData(void* pSrcData, void* pDestData, size_t numBytes)
 	{
 		if (numBytes != m_msgData.size())
 		{
@@ -310,7 +155,7 @@ public:
 		return data;
 	}
 
-	bool unpackData(void* pSrcData, void* pDestData, size_t numBytes) override
+	bool unpackData(void* pSrcData, void* pDestData, size_t numBytes)
 	{
 		if (numBytes != sizeof(m_msgData))
 		{
@@ -361,7 +206,7 @@ public:
 		return data;
 	}
 
-	bool unpackData(void* pSrcData, void* pDestData, size_t numBytes) override
+	bool unpackData(void* pSrcData, void* pDestData, size_t numBytes)
 	{
 		if (numBytes != sizeof(m_msgData))
 		{
@@ -412,7 +257,7 @@ public:
 		return data;
 	}
 
-	bool unpackData(void* pSrcData, void* pDestData, size_t numBytes) override
+	bool unpackData(void* pSrcData, void* pDestData, size_t numBytes)
 	{
 		if (numBytes != sizeof(m_msgData))
 		{
@@ -460,7 +305,7 @@ public:
 		return data;
 	}
 
-	bool unpackData(void* pSrcData, void* pDestData, size_t numBytes) override
+	bool unpackData(void* pSrcData, void* pDestData, size_t numBytes)
 	{
 		if (numBytes != sizeof(m_msgData))
 		{
@@ -496,7 +341,7 @@ public:
 		return data;
 	}
 
-	bool unpackData(void* pSrcData, void* pDestData, size_t numBytes) override
+	bool unpackData(void* pSrcData, void* pDestData, size_t numBytes)
 	{
 		if (numBytes != m_msgData.size())
 		{
@@ -531,7 +376,7 @@ public:
 		return data;
 	}
 
-	bool unpackData(void* pSrcData, void* pDestData, size_t numBytes) override
+	bool unpackData(void* pSrcData, void* pDestData, size_t numBytes)
 	{
 		string test(static_cast<char*>(pDestData));
 		test.resize(numBytes);
@@ -573,7 +418,7 @@ public:
 		return data;
 	}
 
-	bool unpackData(void* pSrcData, void* pDestData, size_t numBytes) override
+	bool unpackData(void* pSrcData, void* pDestData, size_t numBytes)
 	{
 		string test(static_cast<char*>(pDestData));
 		test.resize(numBytes);

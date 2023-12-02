@@ -46,39 +46,9 @@ void NetworkClient::sendMessage(NetworkMessage* message, E::NETWORK_MSG messageT
 {
 	Package connectData;
 	switch (messageType) {
-	case E::kLOGIN_REQUEST:
+	case E::kCONNECT:
 	{
-		MsgConnectRequest* msgObject = reinterpret_cast<MsgConnectRequest*>(message);
-		connectData = msgObject->packData();
-	}
-		break;
-	case E::kSIGNUP_REQUEST:
-	{
-		MsgSignupRequest* msgObject = reinterpret_cast<MsgSignupRequest*>(message);
-		connectData = msgObject->packData();
-	}
-	break;
-	case E::kUSERNAME_REQUEST: 
-	{
-		MsgUsernameRequest* msgObject = reinterpret_cast<MsgUsernameRequest*>(message);
-		connectData = msgObject->packData();
-	}
-		break;
-	case E::kUSERNAME_SENT: 
-	{
-		MsgUsernameSent* msgObject = reinterpret_cast<MsgUsernameSent*>(message);
-		connectData = msgObject->packData();
-	}
-		break;
-	case E::kPASSWORD_REQUEST:
-	{
-		MsgPasswordRequest* msgObject = reinterpret_cast<MsgPasswordRequest*>(message);
-		connectData = msgObject->packData();
-	}
-		break;
-	case E::kPASSWORD_SENT:
-	{
-		MsgPasswordSent* msgObject = reinterpret_cast<MsgPasswordSent*>(message);
+		MsgConnect* msgObject = reinterpret_cast<MsgConnect*>(message);
 		connectData = msgObject->packData();
 	}
 		break;

@@ -13,6 +13,9 @@ Application::Application() :
 	/////////////////////
 	string serverIP;
 	uint16 serverPort;
+	string username;
+	string password;
+
 	cout << "Introduzca la IP del servidor al que se desea conectar." << endl;
 	cin >> serverIP;
 	m_client.setServerIP(serverIP);
@@ -22,27 +25,27 @@ Application::Application() :
 	string connectionMode;
 	cout << "Introduzca 'l' para iniciar sesion, o 'r' para registrarse." << endl;
 	cin >> connectionMode;
+	cout << "Introduzca su nombre de usuario:" << endl;
+	cin >> username;
+	cout << "Introduzca su password:" << endl;
+	cin >> password;
 
-	E::NETWORK_MSG connectionType;
+	E::NETWORK_MSG connectionType = E::kCONNECT;
+
 	if (connectionMode == "l")
 	{
-		connectionType = E::kLOGIN_REQUEST;
-		MsgConnectRequest connectionRequest;
-		m_client.sendMessage(&connectionRequest, connectionType);
+		connectionMode = "l";
 	}
 	else if(connectionMode == "r")
 	{
-		connectionType = E::kSIGNUP_REQUEST;
-		MsgSignupRequest connectionRequest;
-		m_client.sendMessage(&connectionRequest, connectionType);
+		connectionMode = "s";
 	}
 	else
 	{
-		connectionType = E::kLOGIN_REQUEST;
-		cout << "Error al seleccionar. Intentando iniciar sesion." << endl;
-		MsgConnectRequest connectionRequest;
-		m_client.sendMessage(&connectionRequest, connectionType);
+		
 	}
+	MsgConnect msg(connectionMode, username, password);
+	m_client.sendMessage(&msg, connectionType);
 
 	
 
@@ -347,36 +350,6 @@ void Application::handlePackage(Package unpackedData, uint16 msgType)
 {
 	switch (msgType)
 	{
-	case E::kUSERNAME_REQUEST:
-	{
-		MsgUsernameRequest m;
-		string realData = m.m_msgData;
-		m.unpackData(&realData, unpackedData.data(), unpackedData.size());
-		std::cout << "[SERVER] " << realData << endl;
-
-		string username;
-		cin >> username;
-
-		MsgUsernameSent message(username);
-		m_client.sendMessage(&message, E::kUSERNAME_SENT);
-	}
-	break;
-	case E::kPASSWORD_REQUEST:
-	{
-		MsgPasswordRequest m;
-		string realData = m.m_msgData;
-		m.unpackData(&realData, unpackedData.data(), unpackedData.size());
-		std::cout << "[SERVER] " << realData << endl;
-
-		string password;
-		cin >> password;
-
-		MsgPasswordSent message(password);
-		m_client.sendMessage(&message, E::kPASSWORD_SENT);
-
-
-	}
-	break;
 	case E::kCONNECTION_SUCCESSFUL:
 	{
 		MsgConnected m;

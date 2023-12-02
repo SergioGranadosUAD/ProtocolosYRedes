@@ -3,26 +3,20 @@
 #include "NetworkMessage.h"
 #include <unordered_map>
 #include <iostream>
+#include <sstream>
 
 using std::unordered_map;
+using std::stringstream;
 using std::cout;
 using std::endl;
 using sf::Clock;
-
-struct UnconnectedClient 
-{
-	optional<IpAddress> userIp;
-	uint16 userPort;
-	string userName;
-	string userPass;
-	bool creatingAccount;
-};
 
 struct Client 
 {
 	optional<IpAddress> userIp;
 	uint16 userPort;
 	string userName;
+	string userPass;
 	uint32 clientID;
 };
 
@@ -53,14 +47,13 @@ public:
 	bool getPackageTypeAndData(const Package& pack, uint16& msgType, Package& unpackedData) override;
 
 	void handlePackage(Package& unpackedData, const uint16& msgType, Client& messageSender);
-	bool clientIsAlreadyConnecting(const Client& messageSender);
+	void connectionRequest(Package& unpackedData, Client& messageSender);
+	void loginUser(const string& username, const string& password, Client& messageSender);
+	void registerUser(const string& username, const string& password, Client& messageSender);
 	void syncUser(PackageInformation& packageInfo, Client& messageSender);
-	void signUpUser(const Client& messageSender, const bool& signUp = true);
-	UnconnectedClient* isInIncomingList(const Client& messageSender);
-	void deleteUserInIncomingList(const UnconnectedClient& messageSender);
 	void disconnectUser(const Client& messageSender);
-	void connectUser(const UnconnectedClient* messageSender);
-	bool isUserValid(const UnconnectedClient* messageSender);
+	void connectUser(const string& username, const string& password, const Client& messageSender);
+	bool isUserValid(const string& username, const string& password);
 	bool findUsername(const string& username);
 	void sendMessageToAllUsers(NetworkMessage* message, E::NETWORK_MSG& typeToSend, const Client& messageSender);
 	void saveMessageToSyncList(const Package& unpackedData, const uint16& msgType, const uint32& userID);
@@ -77,7 +70,6 @@ public:
 
 private:
 	vector<Client> m_userList;
-	vector<UnconnectedClient> m_incomingClients;
 	vector<PackageInformation> m_boardSyncStorage;
 	unordered_map<string, string> m_registeredUsers;
 	bool m_isRunning;
