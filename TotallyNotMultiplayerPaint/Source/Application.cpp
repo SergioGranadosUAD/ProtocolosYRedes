@@ -350,15 +350,12 @@ void Application::handlePackage(Package unpackedData, uint16 msgType)
 {
 	switch (msgType)
 	{
-	case E::kCONNECTION_SUCCESSFUL:
+	case E::kCONNECT:
 	{
-		MsgConnected m;
+		MsgConnect m;
 		string realData = m.m_msgData;
 		m.unpackData(&realData, unpackedData.data(), unpackedData.size());
 		std::cout << "[SERVER] " << realData << endl;
-
-		MsgSyncUser message;
-		m_client.sendMessage(&message, E::kSYNC_USER);
 
 		m_client.setConnection(true);
 	}
@@ -372,78 +369,20 @@ void Application::handlePackage(Package unpackedData, uint16 msgType)
 		m_Window.close();
 	}
 	break;
-	case E::kCREATE_LINE:
+	case E::kCREATE_SHAPE:
 	{
-		MsgCreateLine message;
-		MsgCreateLine::LineData realData;
+		MsgCreateShape message;
+		MsgCreateShape::ShapeData realData;
 		message.unpackData(unpackedData.data(), &realData, unpackedData.size());
 
-		SHAPE_TYPE shpType = SHAPE_TYPE::LINE;
-
-		Drawing sentShape;
-		sentShape.CreateShape(Vector2f(realData.initialPosX, realData.initialPosY), shpType);
-		sentShape.Update(Vector2f(realData.finalPosX, realData.finalPosY));
-		sentShape.SetColor(realData.colorID);
-		sentShape.setShapeID(realData.messageID);
-		m_ShapeList.push_back(sentShape);
-
-		std::cout << "Shape sync by server." << endl;
-	}
-	break;
-	case E::kCREATE_RECTANGLE:
-	{
-		MsgCreateRectangle message;
-		MsgCreateRectangle::RectangleData realData;
-		message.unpackData(unpackedData.data(), &realData, unpackedData.size());
-
-		SHAPE_TYPE shpType = SHAPE_TYPE::RECTANGLE;
-
-		Drawing sentShape;
-		sentShape.CreateShape(Vector2f(realData.initialPosX, realData.initialPosY), shpType);
-		sentShape.Update(Vector2f(realData.finalPosX, realData.finalPosY));
-		sentShape.SetColor(realData.colorID);
-		sentShape.setShapeID(realData.messageID);
-		m_ShapeList.push_back(sentShape);
-		
-
-		std::cout << "Shape sync by server." << endl;
-	}
-	break;
-	case E::kCREATE_CIRCLE:
-	{
-		MsgCreateCircle message;
-		MsgCreateCircle::CircleData realData;
-		message.unpackData(unpackedData.data(), &realData, unpackedData.size());
-
-		SHAPE_TYPE shpType = SHAPE_TYPE::CIRCLE;
-
-		Drawing sentShape;
-		sentShape.CreateShape(Vector2f(realData.initialPosX, realData.initialPosY), shpType);
-		sentShape.Update(Vector2f(realData.finalPosX, realData.finalPosY));
-		sentShape.SetColor(realData.colorID);
-		sentShape.setShapeID(realData.messageID);
-		m_ShapeList.push_back(sentShape);
-
-		std::cout << "Shape sync by server." << endl;
-	}
-	break;
-	case E::kCREATE_FREEDRAW:
-	{
-		MsgCreateFreedraw message;
-		MsgCreateFreedraw::FreedrawData realData;
-		message.unpackData(unpackedData.data(), &realData, unpackedData.size());
-
-		SHAPE_TYPE shpType = SHAPE_TYPE::FREEDRAW;
-
-		Vector2f initialPos(realData.initialPosX, realData.initialPosY);
-		Vector2f finalPos(realData.finalPosX, realData.finalPosY);
-
-		Line tempLine;
-		tempLine.initialPos = Vertex(initialPos, realData.colorID);
-		tempLine.finalPos = Vertex(finalPos, realData.colorID);
-		tempLine.shapeID = realData.messageID;
-		m_FreedrawList.push_back(tempLine);
-		//std::cout << "Shape sync by server." << endl;
+		if (realData.shapeType == E::kFREEDRAW)
+		{
+			createFreedraw(realData);
+		}
+		else
+		{
+			createRegularShape(realData);
+		}
 	}
 	break;
 	case E::kUNDO_MESSAGE:
@@ -473,38 +412,44 @@ void Application::handlePackage(Package unpackedData, uint16 msgType)
 	}
 }
 
+void Application::createRegularShape(const MsgCreateShape::ShapeData& realData)
+{
+	SHAPE_TYPE shpType = static_cast<SHAPE_TYPE>(realData.shapeType);
+	Drawing sentShape;
+	sentShape.CreateShape(Vector2f(realData.initialPosX, realData.initialPosY), shpType);
+	sentShape.Update(Vector2f(realData.finalPosX, realData.finalPosY));
+	sentShape.SetColor(realData.colorID);
+	sentShape.setShapeID(realData.messageID);
+	m_ShapeList.push_back(sentShape);
+}
+
+void Application::createFreedraw(const MsgCreateShape::ShapeData& realData)
+{
+	Vector2f initialPos(realData.initialPosX, realData.initialPosY);
+	Vector2f finalPos(realData.finalPosX, realData.finalPosY);
+
+	Line tempLine;
+	tempLine.initialPos = Vertex(initialPos, realData.colorID);
+	tempLine.finalPos = Vertex(finalPos, realData.colorID);
+	tempLine.shapeID = realData.messageID;
+	m_FreedrawList.push_back(tempLine);
+}
+
 void Application::sendRegularShape()
 {
+	E::SHAPE_TYPE shapeType = static_cast<E::SHAPE_TYPE>(m_PreviewShape.GetShapeType());
 	Vector2f startingPos = m_PreviewShape.getStartingPos();
 	Vector2f finalPos = m_PreviewShape.getFinalPos();
 	Color colorID = m_PreviewShape.getColorID();
-	switch (m_ActualShape)
-	{
-	case SHAPE_TYPE::LINE:
-	{
-		MsgCreateLine msg(startingPos.x, startingPos.y, finalPos.x, finalPos.y, colorID);
-		m_client.sendMessage(&msg, E::kCREATE_LINE);
-	}
-	break;
-	case SHAPE_TYPE::RECTANGLE:
-	{
-		MsgCreateRectangle msg(startingPos.x, startingPos.y, finalPos.x, finalPos.y, colorID);
-		m_client.sendMessage(&msg, E::kCREATE_RECTANGLE);
-	}
-	break;
-	case SHAPE_TYPE::CIRCLE:
-	{
-		MsgCreateCircle msg(startingPos.x, startingPos.y, finalPos.x, finalPos.y, colorID);
-		m_client.sendMessage(&msg, E::kCREATE_CIRCLE);
-	}
-	break;
-	}
+
+	MsgCreateShape msg(shapeType, startingPos.x, startingPos.y, finalPos.x, finalPos.y, colorID);
+	m_client.sendMessage(&msg, E::kCREATE_SHAPE);
 }
 
 void Application::sendFreedraw(const Vector2f& startingPos, const Vector2f& finalPos)
 {
-	MsgCreateFreedraw msg(startingPos.x, startingPos.y, finalPos.x, finalPos.y, m_SelectedColor);
-	m_client.sendMessage(&msg, E::kCREATE_FREEDRAW);
+	MsgCreateShape msg(E::kFREEDRAW, startingPos.x, startingPos.y, finalPos.x, finalPos.y, m_SelectedColor);
+	m_client.sendMessage(&msg, E::kCREATE_SHAPE);
 }
 
 void Application::removeLatestElementAdded()

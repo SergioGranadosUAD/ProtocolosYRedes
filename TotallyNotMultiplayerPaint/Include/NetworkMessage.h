@@ -9,16 +9,20 @@
 namespace E {
 	enum NETWORK_MSG {
 		kERROR = 0,
+		kPING,
 		kCONNECT, // Done
-		kCONNECTION_SUCCESSFUL, // Done
 		kDISCONNECTION, // Done
-		kCREATE_LINE, // Done
-		kCREATE_RECTANGLE, // Done
-		kCREATE_CIRCLE, // Done
-		kCREATE_FREEDRAW,
-		kSYNC_USER,
+		kCHAT,
+		kCREATE_SHAPE, // Done
 		kUNDO_MESSAGE,
-		kCHAT
+		
+	};
+
+	enum SHAPE_TYPE {
+		kLINE = 0,
+		kRECTANGLE,
+		kCIRCLE,
+		kFREEDRAW
 	};
 }
 
@@ -39,7 +43,10 @@ public:
 class MsgConnect : public NetworkMessage
 {
 public:
-	MsgConnect() = default;
+	MsgConnect()
+	{
+		m_msgData = "CONNECTED";
+	}
 	MsgConnect(string loginMode, string username, string password)
 	{
 		m_msgData = loginMode + " " + username + " " + password;
@@ -71,34 +78,6 @@ public:
 	string m_msgData;
 };
 
-class MsgConnected : public NetworkMessage
-{
-public:
-	Package packData() override
-	{
-		MESSAGE_TYPE_VAR MSGTYPE = E::kCONNECTION_SUCCESSFUL;
-		Package data;
-		data.resize(m_msgData.size() + sizeof(MESSAGE_TYPE_VAR));
-		memcpy(data.data(), &MSGTYPE, sizeof(MESSAGE_TYPE_VAR));
-		memcpy(data.data() + sizeof(MESSAGE_TYPE_VAR), m_msgData.data(), m_msgData.size());
-		return data;
-	}
-
-	bool unpackData(void* pSrcData, void* pDestData, size_t numBytes)
-	{
-		if (numBytes != m_msgData.size())
-		{
-			return false;
-		}
-
-		memcpy(pDestData, pSrcData, numBytes);
-		return true;
-	}
-
-public:
-	const string m_msgData = "CONNECTED";
-};
-
 class MsgDisconnected : public NetworkMessage
 {
 public:
@@ -127,15 +106,16 @@ public:
 	const string m_msgData = "DISCCONNECTED";
 };
 
-class MsgCreateLine : public NetworkMessage
+class MsgCreateShape : public NetworkMessage
 {
 public:
-	MsgCreateLine() = default;
-	MsgCreateLine(Package data) {
+	MsgCreateShape() = default;
+	MsgCreateShape(Package data) {
 		unpackData(&m_msgData, data.data(), data.size());
 	};
-	MsgCreateLine(float iniPosX, float iniPosY, float finPosX, float finPosY, Color colorID, unsigned int messageID = 0)
+	MsgCreateShape(E::SHAPE_TYPE shapeType, float iniPosX, float iniPosY, float finPosX, float finPosY, Color colorID, unsigned int messageID = 0)
 	{
+		m_msgData.shapeType = shapeType;
 		m_msgData.initialPosX = iniPosX;
 		m_msgData.initialPosY = iniPosY;
 		m_msgData.finalPosX = finPosX;
@@ -143,11 +123,11 @@ public:
 		m_msgData.colorID = colorID;
 		m_msgData.messageID = messageID;
 	};
-	virtual ~MsgCreateLine() = default;
+	virtual ~MsgCreateShape() = default;
 
 	Package packData() override
 	{
-		MESSAGE_TYPE_VAR MSGTYPE = E::kCREATE_LINE;
+		MESSAGE_TYPE_VAR MSGTYPE = E::kCREATE_SHAPE;
 		Package data;
 		data.resize(sizeof(m_msgData) + sizeof(MESSAGE_TYPE_VAR));
 		memcpy(data.data(), &MSGTYPE, sizeof(MESSAGE_TYPE_VAR));
@@ -167,193 +147,17 @@ public:
 	}
 
 public:
-	struct LineData
+	struct ShapeData
 	{
+		E::SHAPE_TYPE shapeType;
 		float initialPosX;
 		float initialPosY;
 		float finalPosX;
 		float finalPosY;
 		Color colorID;
 		unsigned int messageID;
+		unsigned short senderID = 0;
 	} m_msgData;
-};
-
-class MsgCreateRectangle : public NetworkMessage
-{
-public:
-	MsgCreateRectangle() = default;
-	MsgCreateRectangle(Package data) {
-		unpackData(&m_msgData, data.data(), data.size());
-	};
-	MsgCreateRectangle(float iniPosX, float iniPosY, float finPosX, float finPosY, Color colorID, unsigned int messageID = 0)
-	{
-		m_msgData.initialPosX = iniPosX;
-		m_msgData.initialPosY = iniPosY;
-		m_msgData.finalPosX = finPosX;
-		m_msgData.finalPosY = finPosY;
-		m_msgData.colorID = colorID;
-		m_msgData.messageID = messageID;
-	};
-	virtual ~MsgCreateRectangle() = default;
-
-	Package packData() override
-	{
-		MESSAGE_TYPE_VAR MSGTYPE = E::kCREATE_RECTANGLE;
-		Package data;
-		data.resize(sizeof(m_msgData) + sizeof(MESSAGE_TYPE_VAR));
-		memcpy(data.data(), &MSGTYPE, sizeof(MESSAGE_TYPE_VAR));
-		memcpy(data.data() + sizeof(MESSAGE_TYPE_VAR), &m_msgData, sizeof(m_msgData));
-		return data;
-	}
-
-	bool unpackData(void* pSrcData, void* pDestData, size_t numBytes)
-	{
-		if (numBytes != sizeof(m_msgData))
-		{
-			return false;
-		}
-		memcpy(pDestData, pSrcData, numBytes);
-		return true;
-	}
-
-public:
-	struct RectangleData
-	{
-		float initialPosX;
-		float initialPosY;
-		float finalPosX;
-		float finalPosY;
-		Color colorID;
-		unsigned int messageID;
-	} m_msgData;
-};
-
-class MsgCreateCircle : public NetworkMessage
-{
-public:
-	MsgCreateCircle() = default;
-	MsgCreateCircle(Package data) 
-	{
-		unpackData(&m_msgData, data.data(), data.size());
-	};
-	MsgCreateCircle(float iniPosX, float iniPosY, float finPosX, float finPosY, Color colorID, unsigned int messageID = 0)
-	{
-		m_msgData.initialPosX = iniPosX;
-		m_msgData.initialPosY = iniPosY;
-		m_msgData.finalPosX = finPosX;
-		m_msgData.finalPosY = finPosY;
-		m_msgData.colorID = colorID;
-		m_msgData.messageID = messageID;
-	};
-	virtual ~MsgCreateCircle() = default;
-
-	Package packData() override
-	{
-		MESSAGE_TYPE_VAR MSGTYPE = E::kCREATE_CIRCLE;
-		Package data;
-		data.resize(sizeof(m_msgData) + sizeof(MESSAGE_TYPE_VAR));
-		memcpy(data.data(), &MSGTYPE, sizeof(MESSAGE_TYPE_VAR));
-		memcpy(data.data() + sizeof(MESSAGE_TYPE_VAR), &m_msgData, sizeof(m_msgData));
-		return data;
-	}
-
-	bool unpackData(void* pSrcData, void* pDestData, size_t numBytes)
-	{
-		if (numBytes != sizeof(m_msgData))
-		{
-			return false;
-		}
-
-		memcpy(pDestData, pSrcData, numBytes);
-		return true;
-	}
-
-public:
-	struct CircleData
-	{
-		float initialPosX;
-		float initialPosY;
-		float finalPosX;
-		float finalPosY;
-		Color colorID;
-		unsigned int messageID;
-	} m_msgData;
-};
-
-class MsgCreateFreedraw : public NetworkMessage
-{
-public:
-	MsgCreateFreedraw() = default;
-	MsgCreateFreedraw(float iniPosX, float iniPosY, float finPosX, float finPosY, Color colorID, unsigned int messageID = 0)
-	{
-		m_msgData.initialPosX = iniPosX;
-		m_msgData.initialPosY = iniPosY;
-		m_msgData.finalPosX = finPosX;
-		m_msgData.finalPosY = finPosY;
-		m_msgData.colorID = colorID;
-		m_msgData.messageID = messageID;
-	};
-	~MsgCreateFreedraw() = default;
-
-	Package packData() override
-	{
-		MESSAGE_TYPE_VAR MSGTYPE = E::kCREATE_FREEDRAW;
-		Package data;
-		data.resize(sizeof(m_msgData) + sizeof(MESSAGE_TYPE_VAR));
-		memcpy(data.data(), &MSGTYPE, sizeof(MESSAGE_TYPE_VAR));
-		memcpy(data.data() + sizeof(MESSAGE_TYPE_VAR), &m_msgData, sizeof(m_msgData));
-		return data;
-	}
-
-	bool unpackData(void* pSrcData, void* pDestData, size_t numBytes)
-	{
-		if (numBytes != sizeof(m_msgData))
-		{
-			return false;
-		}
-
-		memcpy(pDestData, pSrcData, numBytes);
-		return true;
-	}
-
-public:
-	struct FreedrawData
-	{
-		float initialPosX;
-		float initialPosY;
-		float finalPosX;
-		float finalPosY;
-		Color colorID;
-		unsigned int messageID;
-	} m_msgData;
-};
-
-class MsgSyncUser : public NetworkMessage
-{
-public:
-	Package packData() override
-	{
-		MESSAGE_TYPE_VAR MSGTYPE = E::kSYNC_USER;
-		Package data;
-		data.resize(m_msgData.size() + sizeof(MESSAGE_TYPE_VAR));
-		memcpy(data.data(), &MSGTYPE, sizeof(MESSAGE_TYPE_VAR));
-		memcpy(data.data() + sizeof(MESSAGE_TYPE_VAR), m_msgData.data(), m_msgData.size());
-		return data;
-	}
-
-	bool unpackData(void* pSrcData, void* pDestData, size_t numBytes)
-	{
-		if (numBytes != m_msgData.size())
-		{
-			return false;
-		}
-
-		memcpy(pDestData, pSrcData, numBytes);
-		return true;
-	}
-
-public:
-	string m_msgData = "SYNCING";
 };
 
 class MsgUndo : public NetworkMessage

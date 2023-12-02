@@ -52,45 +52,15 @@ void NetworkClient::sendMessage(NetworkMessage* message, E::NETWORK_MSG messageT
 		connectData = msgObject->packData();
 	}
 		break;
-	case E::kCONNECTION_SUCCESSFUL:
-	{
-		MsgConnected* msgObject = reinterpret_cast<MsgConnected*>(message);
-		connectData = msgObject->packData();
-	}
-		break;
 	case E::kDISCONNECTION:
 	{
 		MsgDisconnected* msgObject = reinterpret_cast<MsgDisconnected*>(message);
 		connectData = msgObject->packData();
 	}
 		break;
-	case E::kCREATE_LINE:
+	case E::kCREATE_SHAPE:
 	{
-		MsgCreateLine* msgObject = reinterpret_cast<MsgCreateLine*>(message);
-		connectData = msgObject->packData();
-	}
-		break;
-	case E::kCREATE_CIRCLE:
-	{
-		MsgCreateCircle* msgObject = reinterpret_cast<MsgCreateCircle*>(message);
-		connectData = msgObject->packData();
-	}
-		break;
-	case E::kCREATE_RECTANGLE:
-	{
-		MsgCreateRectangle* msgObject = reinterpret_cast<MsgCreateRectangle*>(message);
-		connectData = msgObject->packData();
-	}
-		break;
-	case E::kCREATE_FREEDRAW:
-	{
-		MsgCreateFreedraw* msgObject = reinterpret_cast<MsgCreateFreedraw*>(message);
-		connectData = msgObject->packData();
-	}
-		break;
-	case E::kSYNC_USER:
-	{
-		MsgSyncUser* msgObject = reinterpret_cast<MsgSyncUser*>(message);
+		MsgCreateShape* msgObject = reinterpret_cast<MsgCreateShape*>(message);
 		connectData = msgObject->packData();
 	}
 		break;

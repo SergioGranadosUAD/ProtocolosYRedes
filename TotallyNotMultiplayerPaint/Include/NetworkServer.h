@@ -50,7 +50,7 @@ public:
 	void connectionRequest(Package& unpackedData, Client& messageSender);
 	void loginUser(const string& username, const string& password, Client& messageSender);
 	void registerUser(const string& username, const string& password, Client& messageSender);
-	void syncUser(PackageInformation& packageInfo, Client& messageSender);
+	void syncUser(const Client& messageSender);
 	void disconnectUser(const Client& messageSender);
 	void connectUser(const string& username, const string& password, const Client& messageSender);
 	bool isUserValid(const string& username, const string& password);
@@ -58,10 +58,7 @@ public:
 	void sendMessageToAllUsers(NetworkMessage* message, E::NETWORK_MSG& typeToSend, const Client& messageSender);
 	void saveMessageToSyncList(const Package& unpackedData, const uint16& msgType, const uint32& userID);
 	bool checkForNewMessage();
-	void sendLine(Package& unpackedData, const uint32& packageID, const Client& messageSender, const uint16& msgType, bool isSyncMessage);
-	void sendRectangle(Package& unpackedData, const uint32& packageID, const Client& messageSender, const uint16& msgType, bool isSyncMessage);
-	void sendCircle(Package& unpackedData, const uint32& packageID, const Client& messageSender, const uint16& msgType, bool isSyncMessage);
-	void sendFreedraw(Package& unpackedData, const uint32& packageID, const Client& messageSender, const uint16& msgType, bool isSyncMessage);
+	void sendShape(Package& unpackedData, const uint32& packageID, const Client& messageSender, const uint16& msgType, bool isSyncMessage);
 	uint32 getClientID(const Client& messageSender);
 	string getClientName(const Client& messageSender);
 	uint32 removeLatestPackageFromList(const uint32& clientID);

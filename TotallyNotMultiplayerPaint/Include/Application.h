@@ -60,6 +60,8 @@ public:
 	void Render();
 	
 	void handlePackage(Package unpackedData, uint16 msgType);
+	void createRegularShape(const MsgCreateShape::ShapeData& realData);
+	void createFreedraw(const MsgCreateShape::ShapeData& realData);
 	void sendRegularShape();
 	void sendFreedraw(const Vector2f& startingPos, const Vector2f& finalPos);
 	void removeLatestElementAdded();
