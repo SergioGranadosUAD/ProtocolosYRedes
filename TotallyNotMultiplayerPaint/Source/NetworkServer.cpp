@@ -125,6 +125,12 @@ void NetworkServer::sendMessage(NetworkMessage* message, E::NETWORK_MSG messageT
 		connectData = msgObject->packData();
 	}
 	break;
+	case E::kCHAT:
+	{
+		MsgChat* msgObject = reinterpret_cast<MsgChat*>(message);
+		connectData = msgObject->packData();
+	}
+	break;
 	}
 	Package finalPackage = getPackage(connectData.data(), connectData.size());
 
@@ -333,6 +339,7 @@ void NetworkServer::connectUser(const UnconnectedClient* messageSender)
 	Client newClient;
 	newClient.userIp = messageSender->userIp;
 	newClient.userPort = messageSender->userPort;
+	newClient.userName = messageSender->userName;
 	newClient.clientID = m_clientIDCount;
 	m_userList.push_back(newClient);
 
@@ -501,6 +508,19 @@ uint32 NetworkServer::getClientID(const Client& messageSender)
 	return 0;
 }
 
+string NetworkServer::getClientName(const Client& messageSender)
+{
+	for (int i = 0; i < m_userList.size(); i++)
+	{
+		if (messageSender.userIp.value() == m_userList[i].userIp.value() &&
+			messageSender.userPort == m_userList[i].userPort)
+		{
+			return m_userList[i].userName;
+		}
+	}
+	return "Unknown";
+}
+
 uint32 NetworkServer::removeLatestPackageFromList(const uint32& clientID)
 {
 	uint32 packageID = 0;
@@ -653,6 +673,15 @@ void NetworkServer::handlePackage(Package& unpackedData, const uint16& msgType, 
 
 		MsgUndo msg(removedPackageID);
 		E::NETWORK_MSG typeToSend = E::kUNDO_MESSAGE;
+		sendMessageToAllUsers(&msg, typeToSend, messageSender);
+	}
+	break;
+	case E::kCHAT:
+	{
+		string chatMessage(unpackedData.data());
+		chatMessage.resize(unpackedData.size());
+		MsgChat msg(getClientName(messageSender), chatMessage);
+		E::NETWORK_MSG typeToSend = E::kCHAT;
 		sendMessageToAllUsers(&msg, typeToSend, messageSender);
 	}
 	break;

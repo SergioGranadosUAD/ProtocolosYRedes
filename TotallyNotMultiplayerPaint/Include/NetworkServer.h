@@ -22,6 +22,7 @@ struct Client
 {
 	optional<IpAddress> userIp;
 	uint16 userPort;
+	string userName;
 	uint32 clientID;
 };
 
@@ -69,6 +70,7 @@ public:
 	void sendCircle(Package& unpackedData, const uint32& packageID, const Client& messageSender, const uint16& msgType, bool isSyncMessage);
 	void sendFreedraw(Package& unpackedData, const uint32& packageID, const Client& messageSender, const uint16& msgType, bool isSyncMessage);
 	uint32 getClientID(const Client& messageSender);
+	string getClientName(const Client& messageSender);
 	uint32 removeLatestPackageFromList(const uint32& clientID);
 
 	inline bool isRunning() { return m_isRunning; };

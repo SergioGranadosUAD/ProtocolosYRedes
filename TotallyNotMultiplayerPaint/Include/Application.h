@@ -9,6 +9,7 @@
 #include "Drawing.h"
 #include "NetworkClient.h"
 #include "NetworkMessage.h"
+#include "Chat.h"
 
 #define DRAWING_SHAPE true
 #define FREEDRAW_SHAPE false
@@ -16,7 +17,7 @@
 const int BITS_PER_PIXEL = 32;
 const int DEFAULT_WIDTH = 800;
 const int DEFAULT_HEIGHT = 600;
-const int BUTTON_COUNT = 12;
+const int BUTTON_COUNT = 13;
 
 using std::cout;
 using std::cin;
@@ -77,6 +78,7 @@ private:
 	Vector2f m_InitialMousePosition;
 	Color m_SelectedColor;
 	NetworkClient m_client;
+	Chat m_chatDisplay;
 
 	Button m_buttons[BUTTON_COUNT];
 	Texture m_buttonsTexture;

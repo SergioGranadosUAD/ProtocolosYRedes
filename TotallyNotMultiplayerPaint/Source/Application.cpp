@@ -5,7 +5,8 @@ Application::Application() :
 	m_ActualShape(SHAPE_TYPE::LINE),
 	m_PreviewShape(),
 	m_MouseButtonDown(false) ,
-	m_SelectedColor(Color::White)
+	m_SelectedColor(Color::White),
+	m_chatDisplay()
 {
 	/////////////////////
 	//	Placeholder
@@ -124,6 +125,9 @@ void Application::initButtons()
 	m_buttons[11].setPosition(80, 510);
 	m_buttons[11].setTextureRect(50, 50, 50, 50);
 
+	m_buttons[12].setPosition(20, 390);
+	m_buttons[12].setTextureRect(0, 100, 50, 50);
+
 
 	m_buttons[0].setButtonAction([this]()
 		{
@@ -181,6 +185,10 @@ void Application::initButtons()
 		{
 			m_ActualShape = SHAPE_TYPE::FREEDRAW;
 		});
+	m_buttons[12].setButtonAction([this]()
+		{
+			removeLatestElementAdded();
+		});
 }
 
 void Application::HandleInput() 
@@ -198,13 +206,28 @@ void Application::HandleInput()
 				m_PreviewShape.Clear();
 			}
 
-
-			if (keyboardEvent.key.code == sf::Keyboard::Z)
+			break;
+		case Event::TextEntered:
+		{
+			uint32_t characterReceived = keyboardEvent.text.unicode;
+			if (characterReceived == '\b')
 			{
-				removeLatestElementAdded();
+				m_chatDisplay.removeLatestCharacter();
 			}
-
-
+			else if (characterReceived == '\r')
+			{
+				if (m_chatDisplay.isActive() && !m_chatDisplay.isEmpty())
+				{
+					MsgChat msg(m_chatDisplay.getText());
+					m_client.sendMessage(&msg, E::kCHAT);
+				}
+				m_chatDisplay.toggleActive();
+			}
+			else
+			{
+				m_chatDisplay.addInputText(characterReceived);
+			}
+		}
 			break;
 		case Event::MouseButtonPressed:
 			for (int i = 0; i < BUTTON_COUNT; ++i) {
@@ -298,10 +321,6 @@ void Application::Render() {
 		shape.Render(m_Window);
 	}
 
-	for (auto& buttons : m_buttons) {
-		buttons.render(m_Window);
-	}
-
 	if (m_FreedrawList.size() > 0) {
 		for (int i = 0; i < m_FreedrawList.size() - 1; ++i)
 		{
@@ -309,6 +328,12 @@ void Application::Render() {
 			m_Window.draw(vertexLine, 2, sf::PrimitiveType::Lines);
 		}
 	}
+
+	for (auto& buttons : m_buttons) {
+		buttons.render(m_Window);
+	}
+
+	m_chatDisplay.render(m_Window);
 
 	m_Window.display();
 }
@@ -462,6 +487,14 @@ void Application::handlePackage(Package unpackedData, uint16 msgType)
 		uint32 messageID = stoi(idValue);
 
 		removeShapeFromID(messageID);
+	}
+	break;
+	case E::kCHAT:
+	{
+		string realData(unpackedData.data());
+		realData.resize(unpackedData.size());
+
+		cout << realData << endl;
 	}
 	break;
 	}

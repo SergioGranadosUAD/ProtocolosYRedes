@@ -22,7 +22,8 @@ namespace E {
 		kCREATE_CIRCLE, // Done
 		kCREATE_FREEDRAW,
 		kSYNC_USER,
-		kUNDO_MESSAGE
+		kUNDO_MESSAGE,
+		kCHAT
 	};
 }
 
@@ -547,4 +548,45 @@ public:
 public:
 	string m_msgData = "UNDO";
 	
+};
+
+class MsgChat : public NetworkMessage
+{
+public:
+	MsgChat() = default;
+	MsgChat(string message)
+	{
+		m_msgData = message;
+	}
+	MsgChat(string senderName, string message)
+	{
+		m_msgData = "<" + senderName + "> " + message;
+	}
+
+	Package packData() override
+	{
+		MESSAGE_TYPE_VAR MSGTYPE = E::kCHAT;
+		Package data;
+		data.resize(m_msgData.size() + sizeof(MESSAGE_TYPE_VAR));
+		memcpy(data.data(), &MSGTYPE, sizeof(MESSAGE_TYPE_VAR));
+		memcpy(data.data() + sizeof(MESSAGE_TYPE_VAR), m_msgData.data(), m_msgData.size());
+		return data;
+	}
+
+	bool unpackData(void* pSrcData, void* pDestData, size_t numBytes) override
+	{
+		string test(static_cast<char*>(pDestData));
+		test.resize(numBytes);
+		if (numBytes < sizeof(char))
+		{
+			return false;
+		}
+
+		//memcpy(pDestData, pSrcData, numBytes);
+		pSrcData = &test;
+		return true;
+	}
+
+public:
+	string m_msgData;
 };
