@@ -163,39 +163,38 @@ public:
 class MsgUndo : public NetworkMessage
 {
 public:
-	MsgUndo() = default;
+	MsgUndo()
+	{
+		m_msgData = 0;
+	}
 	MsgUndo(unsigned int packageID)
 	{
-		m_msgData.append(" ");
-		m_msgData.append(to_string(packageID));
+		m_msgData = packageID;
 	}
 	
 	Package packData() override
 	{
 		MESSAGE_TYPE_VAR MSGTYPE = E::kUNDO_MESSAGE;
 		Package data;
-		data.resize(m_msgData.size() + sizeof(MESSAGE_TYPE_VAR));
+		data.resize(sizeof(m_msgData) + sizeof(MESSAGE_TYPE_VAR));
 		memcpy(data.data(), &MSGTYPE, sizeof(MESSAGE_TYPE_VAR));
-		memcpy(data.data() + sizeof(MESSAGE_TYPE_VAR), m_msgData.data(), m_msgData.size());
+		memcpy(data.data() + sizeof(MESSAGE_TYPE_VAR), &m_msgData, sizeof(m_msgData));
 		return data;
 	}
 
-	bool unpackData(void* pSrcData, void* pDestData, size_t numBytes)
+	static bool unpackData(void* pSrcData, void* pDestData, size_t numBytes)
 	{
-		string test(static_cast<char*>(pDestData));
-		test.resize(numBytes);
-		if (numBytes < sizeof(char))
+		if (numBytes != sizeof(m_msgData))
 		{
 			return false;
 		}
 
-		//memcpy(pDestData, pSrcData, numBytes);
-		pSrcData = &test;
+		memcpy(pDestData, pSrcData, numBytes);
 		return true;
 	}
 
 public:
-	string m_msgData = "UNDO";
+	unsigned int m_msgData;
 	
 };
 

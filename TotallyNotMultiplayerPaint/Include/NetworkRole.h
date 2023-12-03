@@ -24,7 +24,7 @@ public:
 	virtual void sendMessage(NetworkMessage* message, E::NETWORK_MSG messageType) = 0;
 
 	virtual int countSetBits(const void* pData, size_t sizeofData) = 0;
-	virtual Checksum getChecksum(const void* pData, size_t sizeofData) = 0;
+	virtual Checksum getChecksum(const void* pData, int sizeofData) = 0;
 	virtual Package getPackage(const void* pData, int sizeofData) = 0;
 	virtual bool isPackageValid(const Package& pack, Package* pOutPackage = nullptr, uint16* pOutDataSize = nullptr) = 0;
 	virtual bool getPackageTypeAndData(const Package& pack, uint16& msgType, Package& unpackedData) = 0;

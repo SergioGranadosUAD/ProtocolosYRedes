@@ -73,6 +73,7 @@ private:
 	RenderWindow m_Window;
 	vector<Drawing> m_ShapeList;
 	vector<Line> m_FreedrawList;
+	Line m_previewLine;
 	vector<bool> m_latestElementAdded;
 	SHAPE_TYPE m_ActualShape;
 	Drawing m_PreviewShape;

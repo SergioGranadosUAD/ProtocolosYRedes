@@ -244,11 +244,10 @@ void Application::HandleInput()
 			if (m_ActualShape == SHAPE_TYPE::FREEDRAW)
 			{
 				Vector2f mousePos = GetMousePosition();
-				Line tempLine;
-				tempLine.initialPos = Vertex(mousePos, m_SelectedColor);
-				tempLine.finalPos = Vertex(mousePos, m_SelectedColor);
-				tempLine.shapeID = 0;
-				m_FreedrawList.push_back(tempLine);
+				m_previewLine.initialPos = Vertex(mousePos, m_SelectedColor);
+				m_previewLine.finalPos = Vertex(mousePos, m_SelectedColor);
+				m_previewLine.shapeID = 0;
+				//m_FreedrawList.push_back(tempLine);
 				m_latestElementAdded.push_back(FREEDRAW_SHAPE);
 				break;
 			}
@@ -261,15 +260,15 @@ void Application::HandleInput()
 				m_MouseButtonDown = false;
 				if (m_ActualShape == SHAPE_TYPE::FREEDRAW)
 				{
-					Vector2f latestVectorPosition = getLatestFreedraw()->initialPos.position;
+					Vector2f latestVectorPosition = m_previewLine.initialPos.position;
 					Vector2f actualVectorPosition = GetMousePosition();
-					getLatestFreedraw()->finalPos.position = actualVectorPosition;
+					m_previewLine.finalPos.position = actualVectorPosition;
 					sendFreedraw(latestVectorPosition, actualVectorPosition);
 					break;
 				}
 
 				m_PreviewShape.SetColor(m_SelectedColor);
-				m_ShapeList.push_back(m_PreviewShape);
+				//m_ShapeList.push_back(m_PreviewShape);
 				m_latestElementAdded.push_back(DRAWING_SHAPE);
 				sendRegularShape();
 				m_PreviewShape.Reset();
@@ -282,18 +281,16 @@ void Application::HandleInput()
 					break;
 				}
 
-				Vector2f latestVectorPosition = getLatestFreedraw()->initialPos.position;
+				Vector2f latestVectorPosition = m_previewLine.initialPos.position;
 				Vector2f actualVectorPosition = GetMousePosition();
 				if (latestVectorPosition != actualVectorPosition)
 				{
-					getLatestFreedraw()->finalPos.position = actualVectorPosition;
-					Line tempLine;
-					tempLine.initialPos = Vertex(actualVectorPosition, m_SelectedColor);
-					tempLine.finalPos = Vertex(actualVectorPosition, m_SelectedColor);
-					tempLine.shapeID = 0;
-					m_FreedrawList.push_back(tempLine);
-					m_latestElementAdded.push_back(FREEDRAW_SHAPE);
+					m_previewLine.finalPos.position = actualVectorPosition;
 					sendFreedraw(latestVectorPosition, actualVectorPosition);
+
+					m_previewLine.initialPos.position = actualVectorPosition;
+					m_previewLine.finalPos.position = actualVectorPosition;
+					m_latestElementAdded.push_back(FREEDRAW_SHAPE);
 					break;
 				}
 			}
@@ -387,18 +384,9 @@ void Application::handlePackage(Package unpackedData, uint16 msgType)
 	break;
 	case E::kUNDO_MESSAGE:
 	{
-		string realData(unpackedData.data());
-		realData.resize(unpackedData.size());
-
-		string undo;
-		string idValue;
-
-		stringstream ss(realData);
-		ss >> undo >> idValue;
-
-		uint32 messageID = stoi(idValue);
-
-		removeShapeFromID(messageID);
+		uint32 realData;
+		MsgUndo::unpackData(unpackedData.data(), &realData, unpackedData.size());
+		removeShapeFromID(realData);
 	}
 	break;
 	case E::kCHAT:

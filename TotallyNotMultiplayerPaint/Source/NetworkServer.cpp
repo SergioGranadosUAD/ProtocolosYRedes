@@ -1,6 +1,6 @@
 #include "../Include/NetworkServer.h"
 
-#define DEFAULT_PORT 25565
+#define DEFAULT_PORT 50001
 
 NetworkServer::NetworkServer() :
 	m_isRunning(true)
@@ -106,7 +106,7 @@ int NetworkServer::countSetBits(const void* pData, size_t sizeofData)
 	return setBits;
 }
 
-Checksum NetworkServer::getChecksum(const void* pData, size_t sizeofData)
+Checksum NetworkServer::getChecksum(const void* pData, int sizeofData)
 {
 	static unsigned int firm = 0xAAAA0000;
 	int numBitsData = countSetBits(pData, sizeofData);
@@ -254,12 +254,7 @@ void NetworkServer::sendMessageToAllUsers(NetworkMessage* message, E::NETWORK_MS
 {
 	for (auto& client : m_userList)
 	{
-		if ((client.userIp.value() != messageSender.userIp.value() && client.userPort != messageSender.userPort) ||
-			(client.userIp.value() == messageSender.userIp.value() && client.userPort != messageSender.userPort))
-		{
-			cout << "Sending shape information to user " << client.userIp.value() << ":" << client.userPort << endl;
-			sendMessage(message, typeToSend, client);
-		}
+		sendMessage(message, typeToSend, client);
 	}
 }
 
@@ -292,7 +287,6 @@ void NetworkServer::sendShape(Package& unpackedData, const uint32& packageID, co
 	MsgCreateShape::ShapeData realData;
 	message.unpackData(unpackedData.data(), &realData, unpackedData.size());
 
-	cout << "Shape created by user." << endl;
 	E::NETWORK_MSG typeToSend = static_cast<E::NETWORK_MSG>(msgType);
 	message.m_msgData = realData;
 	message.m_msgData.messageID = packageID;

@@ -99,7 +99,7 @@ int NetworkClient::countSetBits(const void* pData, size_t sizeofData)
 	return setBits;
 }
 
-Checksum NetworkClient::getChecksum(const void* pData, size_t sizeofData)
+Checksum NetworkClient::getChecksum(const void* pData, int sizeofData)
 {
 	static unsigned int firm = 0xAAAA0000;
 	int numBitsData = countSetBits(pData, sizeofData);

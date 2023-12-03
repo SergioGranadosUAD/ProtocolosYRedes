@@ -41,7 +41,7 @@ public:
 	template <typename T>
 	int countSetBits(T data);
 	int countSetBits(const void* pData, size_t sizeofData) override;
-	Checksum getChecksum(const void* pData, size_t sizeofData) override;
+	Checksum getChecksum(const void* pData, int sizeofData) override;
 	Package getPackage(const void* pData, int sizeofData) override;
 	bool isPackageValid(const Package& pack, Package* pOutPackage = nullptr, uint16* pOutDataSize = nullptr) override;
 	bool getPackageTypeAndData(const Package& pack, uint16& msgType, Package& unpackedData) override;
