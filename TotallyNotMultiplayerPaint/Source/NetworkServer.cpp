@@ -7,6 +7,7 @@ NetworkServer::NetworkServer() :
 {
 	socket.setBlocking(false);
 	socket.bind(DEFAULT_PORT);
+	m_pingCooldown.restart();
 }
 
 bool NetworkServer::waitForMessage()
@@ -80,6 +81,12 @@ void NetworkServer::sendMessage(NetworkMessage* message, E::NETWORK_MSG messageT
 	case E::kCHAT:
 	{
 		MsgChat* msgObject = reinterpret_cast<MsgChat*>(message);
+		connectData = msgObject->packData();
+	}
+	break;
+	case E::kPING:
+	{
+		MsgPing* msgObject = reinterpret_cast<MsgPing*>(message);
 		connectData = msgObject->packData();
 	}
 	break;
@@ -201,6 +208,7 @@ void NetworkServer::syncUser(const Client& messageSender)
 
 void NetworkServer::disconnectUser(const Client& messageSender)
 {
+	removeUserFromList(messageSender);
 	MsgDisconnected message;
 	sendMessage(&message, E::kDISCONNECTION, messageSender);
 }
@@ -214,6 +222,7 @@ void NetworkServer::connectUser(const string& username, const string& password, 
 	newClient.userName = username;
 	newClient.userPass = password;
 	newClient.clientID = m_clientIDCount;
+	newClient.pingTimer.restart();
 	m_userList.push_back(newClient);
 
 	MsgConnect message;
@@ -250,7 +259,7 @@ bool NetworkServer::findUsername(const string& username)
 	return false;
 }
 
-void NetworkServer::sendMessageToAllUsers(NetworkMessage* message, E::NETWORK_MSG& typeToSend, const Client& messageSender)
+void NetworkServer::sendMessageToAllUsers(NetworkMessage* message, E::NETWORK_MSG& typeToSend)
 {
 	for (auto& client : m_userList)
 	{
@@ -269,16 +278,24 @@ void NetworkServer::saveMessageToSyncList(const Package& unpackedData, const uin
 	m_boardSyncStorage.push_back(dataToStore);
 }
 
-bool NetworkServer::checkForNewMessage()
+bool NetworkServer::sendPing()
 {
-	float timeSinceLastMessage = m_newMessageTimer.getElapsedTime().asSeconds();
-	m_newMessageTimer.restart();
+	MsgPing msg;
+	E::NETWORK_MSG msgType = E::kPING;
+	sendMessageToAllUsers(&msg, msgType);
+	m_pingCooldown.restart();
+}
 
-	if (timeSinceLastMessage > 1)
+void NetworkServer::checkForTimeout()
+{
+	for (auto& client : m_userList)
 	{
-		return true;
+		if (client.pingTimer.getElapsedTime().asMilliseconds() > 10000)
+		{
+			cout << "User timed out" << endl;
+			disconnectUser(client);
+		}
 	}
-	return false;
 }
 
 void NetworkServer::sendShape(Package& unpackedData, const uint32& packageID, const Client& messageSender, const uint16& msgType, bool isSyncMessage)
@@ -297,34 +314,21 @@ void NetworkServer::sendShape(Package& unpackedData, const uint32& packageID, co
 	}
 	else 
 	{
-		sendMessageToAllUsers(&message, typeToSend, messageSender);
+		sendMessageToAllUsers(&message, typeToSend);
 	}
 }
 
-uint32 NetworkServer::getClientID(const Client& messageSender)
+Client* NetworkServer::getClientData(const Client& messageSender)
 {
 	for (int i = 0; i < m_userList.size(); i++)
 	{
 		if (messageSender.userIp.value() == m_userList[i].userIp.value() &&
 			messageSender.userPort == m_userList[i].userPort)
 		{
-			return m_userList[i].clientID;
+			return &m_userList[i];
 		}
 	}
 	return 0;
-}
-
-string NetworkServer::getClientName(const Client& messageSender)
-{
-	for (int i = 0; i < m_userList.size(); i++)
-	{
-		if (messageSender.userIp.value() == m_userList[i].userIp.value() &&
-			messageSender.userPort == m_userList[i].userPort)
-		{
-			return m_userList[i].userName;
-		}
-	}
-	return "Unknown";
 }
 
 uint32 NetworkServer::removeLatestPackageFromList(const uint32& clientID)
@@ -341,6 +345,20 @@ uint32 NetworkServer::removeLatestPackageFromList(const uint32& clientID)
 		}
 	}
 	return packageID;
+}
+
+void NetworkServer::removeUserFromList(const Client& messageSender)
+{
+	for (auto it = m_userList.rbegin(); it != m_userList.rend(); ++it)
+	{
+		auto& cl = *it;
+		if (cl.userIp.value() == messageSender.userIp.value() &&
+			cl.userPort == messageSender.userPort)
+		{
+			m_userList.erase((it + 1).base());
+			break;
+		}
+	}
 }
 
 void NetworkServer::handlePackage(Package& unpackedData, const uint16& msgType, Client& messageSender)
@@ -366,28 +384,33 @@ void NetworkServer::handlePackage(Package& unpackedData, const uint16& msgType, 
 	break;
 	case E::kCREATE_SHAPE:
 	{
-		uint32 clientID = getClientID(messageSender);
+		uint32 clientID = getClientData(messageSender)->clientID;
 		saveMessageToSyncList(unpackedData, msgType, clientID);
 		sendShape(unpackedData, m_messageIDCount, messageSender, msgType, false);
 	}
 	break;
 	case E::kUNDO_MESSAGE:
 	{
-		uint32 clientID = getClientID(messageSender);
+		uint32 clientID = getClientData(messageSender)->clientID;
 		uint32 removedPackageID = removeLatestPackageFromList(clientID);
 
 		MsgUndo msg(removedPackageID);
 		E::NETWORK_MSG typeToSend = E::kUNDO_MESSAGE;
-		sendMessageToAllUsers(&msg, typeToSend, messageSender);
+		sendMessageToAllUsers(&msg, typeToSend);
 	}
 	break;
 	case E::kCHAT:
 	{
 		string chatMessage(unpackedData.data());
 		chatMessage.resize(unpackedData.size());
-		MsgChat msg(getClientName(messageSender), chatMessage);
+		MsgChat msg(getClientData(messageSender)->userName, chatMessage);
 		E::NETWORK_MSG typeToSend = E::kCHAT;
-		sendMessageToAllUsers(&msg, typeToSend, messageSender);
+		sendMessageToAllUsers(&msg, typeToSend);
+	}
+	break;
+	case E::kPING:
+	{
+		getClientData(messageSender)->pingTimer.restart();
 	}
 	break;
 	default:

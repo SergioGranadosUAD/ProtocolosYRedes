@@ -66,6 +66,7 @@ public:
 	void sendFreedraw(const Vector2f& startingPos, const Vector2f& finalPos);
 	void removeLatestElementAdded();
 	void removeShapeFromID(const uint32& id);
+	void disconnect();
 
 	inline Line* getLatestFreedraw() { return &m_FreedrawList[m_FreedrawList.size() - 1]; };
 	bool isRunning() const { return m_Window.isOpen(); };
@@ -82,6 +83,7 @@ private:
 	Color m_SelectedColor;
 	NetworkClient m_client;
 	Chat m_chatDisplay;
+	Clock m_timeSinceLastPing;
 
 	Button m_buttons[BUTTON_COUNT];
 	Texture m_buttonsTexture;

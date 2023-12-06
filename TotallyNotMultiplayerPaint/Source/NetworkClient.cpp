@@ -76,6 +76,12 @@ void NetworkClient::sendMessage(NetworkMessage* message, E::NETWORK_MSG messageT
 		connectData = msgObject->packData();
 	}
 	break;
+	case E::kPING:
+	{
+		MsgPing* msgObject = reinterpret_cast<MsgPing*>(message);
+		connectData = msgObject->packData();
+	}
+	break;
 	}
 	Package finalPackage = getPackage(connectData.data(), connectData.size());
 

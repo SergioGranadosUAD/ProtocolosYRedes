@@ -1,7 +1,7 @@
 #include "../Include/Application.h"
 
 Application::Application() :
-	m_Window(VideoMode(Vector2u(DEFAULT_WIDTH, DEFAULT_HEIGHT), BITS_PER_PIXEL), "Paint test"),
+	m_Window(VideoMode(Vector2u(DEFAULT_WIDTH, DEFAULT_HEIGHT), BITS_PER_PIXEL), "Totally not multiplayer paint"),
 	m_ActualShape(SHAPE_TYPE::LINE),
 	m_PreviewShape(),
 	m_MouseButtonDown(false) ,
@@ -67,6 +67,7 @@ Application::Application() :
 
 	m_buttonsTexture.loadFromFile("Resources/buttons.png");
 	initButtons();
+	m_timeSinceLastPing.restart();
 }
 
 Application::Application(int windowWidth, int windowHeight):
@@ -80,8 +81,12 @@ Application::Application(int windowWidth, int windowHeight):
 
 Application::~Application() 
 {
-	MsgDisconnected msg;
-	m_client.sendMessage(&msg, E::kDISCONNECTION);
+	//disconnect();
+
+	for (auto& shape : m_ShapeList)
+	{
+		shape.Clear();
+	}
 }
 
 void Application::initButtons()
@@ -247,7 +252,6 @@ void Application::HandleInput()
 				m_previewLine.initialPos = Vertex(mousePos, m_SelectedColor);
 				m_previewLine.finalPos = Vertex(mousePos, m_SelectedColor);
 				m_previewLine.shapeID = 0;
-				//m_FreedrawList.push_back(tempLine);
 				m_latestElementAdded.push_back(FREEDRAW_SHAPE);
 				break;
 			}
@@ -307,6 +311,12 @@ void Application::Update() {
 	if (msgType != -1 && !unpackedData.empty())
 	{
 		handlePackage(unpackedData, msgType);
+	}
+
+	if (m_timeSinceLastPing.getElapsedTime().asMilliseconds() > 10000)
+	{
+		cout << "Lost connection to server" << endl;
+		disconnect();
 	}
 }
 
@@ -397,6 +407,11 @@ void Application::handlePackage(Package unpackedData, uint16 msgType)
 		cout << realData << endl;
 	}
 	break;
+	case E::kPING:
+		cout << "Ping received" << endl;
+		m_timeSinceLastPing.restart();
+		MsgPing msg;
+		m_client.sendMessage(&msg, E::kPING);
 	}
 }
 
@@ -483,5 +498,12 @@ void Application::removeShapeFromID(const uint32& id)
 			return;
 		}
 	}
+}
+
+void Application::disconnect()
+{
+	MsgDisconnected msg;
+	m_client.sendMessage(&msg, E::kDISCONNECTION);
+	m_Window.close();
 }
 

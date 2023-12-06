@@ -32,6 +32,12 @@ int main() {
 		server = new NetworkServer;
 		while (server->isRunning()) {
 			server->waitForMessage();
+			if (server->getPingCooldownTime() > 1000) 
+			{
+				server->sendPing();
+				server->checkForTimeout();
+				cout << "Ping sent" << endl;
+			}
 		}
 		delete server;
 	}

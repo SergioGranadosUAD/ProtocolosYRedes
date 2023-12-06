@@ -18,6 +18,7 @@ struct Client
 	string userName;
 	string userPass;
 	uint32 clientID;
+	Clock pingTimer;
 };
 
 struct PackageInformation 
@@ -55,14 +56,17 @@ public:
 	void connectUser(const string& username, const string& password, const Client& messageSender);
 	bool isUserValid(const string& username, const string& password);
 	bool findUsername(const string& username);
-	void sendMessageToAllUsers(NetworkMessage* message, E::NETWORK_MSG& typeToSend, const Client& messageSender);
+	void sendMessageToAllUsers(NetworkMessage* message, E::NETWORK_MSG& typeToSend);
 	void saveMessageToSyncList(const Package& unpackedData, const uint16& msgType, const uint32& userID);
-	bool checkForNewMessage();
+	bool sendPing();
+	void checkForTimeout();
 	void sendShape(Package& unpackedData, const uint32& packageID, const Client& messageSender, const uint16& msgType, bool isSyncMessage);
-	uint32 getClientID(const Client& messageSender);
-	string getClientName(const Client& messageSender);
+	Client* getClientData(const Client& messageSender);
 	uint32 removeLatestPackageFromList(const uint32& clientID);
+	void removeUserFromList(const Client& messageSender);
 
+	inline int getPingCooldownTime() { return m_pingCooldown.getElapsedTime().asMilliseconds(); };
+	inline void resetPingCooldown() { m_pingCooldown.restart(); };
 	inline bool isRunning() { return m_isRunning; };
 
 private:
@@ -73,7 +77,7 @@ private:
 
 	UdpSocket socket;
 
-	Clock m_newMessageTimer;
+	Clock m_pingCooldown;
 	uint32 m_messageIDCount = 0;
 	uint32 m_clientIDCount = 0;
 };

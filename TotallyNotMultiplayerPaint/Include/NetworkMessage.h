@@ -238,3 +238,32 @@ public:
 public:
 	string m_msgData;
 };
+
+class MsgPing : public NetworkMessage
+{
+public:
+	Package packData() override
+	{
+		MESSAGE_TYPE_VAR MSGTYPE = E::kPING;
+		Package data;
+		data.resize(m_msgData.size() + sizeof(MESSAGE_TYPE_VAR));
+		memcpy(data.data(), &MSGTYPE, sizeof(MESSAGE_TYPE_VAR));
+		memcpy(data.data() + sizeof(MESSAGE_TYPE_VAR), m_msgData.data(), m_msgData.size());
+		return data;
+	}
+
+	bool unpackData(void* pSrcData, void* pDestData, size_t numBytes)
+	{
+		if (numBytes != m_msgData.size())
+		{
+			return false;
+		}
+
+		memcpy(pDestData, pSrcData, numBytes);
+		return true;
+	}
+
+public:
+	const string m_msgData = "PING";
+};
+
