@@ -58,7 +58,7 @@ public:
 	bool findUsername(const string& username);
 	void sendMessageToAllUsers(NetworkMessage* message, E::NETWORK_MSG& typeToSend);
 	void saveMessageToSyncList(const Package& unpackedData, const uint16& msgType, const uint32& userID);
-	bool sendPing();
+	void sendPing();
 	void checkForTimeout();
 	void sendShape(Package& unpackedData, const uint32& packageID, const Client& messageSender, const uint16& msgType, bool isSyncMessage);
 	Client* getClientData(const Client& messageSender);

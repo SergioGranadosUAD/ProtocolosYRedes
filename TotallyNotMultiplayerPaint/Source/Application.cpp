@@ -257,7 +257,6 @@ void Application::HandleInput()
 			}
 
 			m_PreviewShape.CreateShape(GetMousePosition(), m_ActualShape);
-			cout << "Shape created at pos " << GetMousePosition().x << ", " << GetMousePosition().y << endl;
 			break;
 		case Event::MouseButtonReleased:
 			if (m_MouseButtonDown) {
@@ -272,7 +271,6 @@ void Application::HandleInput()
 				}
 
 				m_PreviewShape.SetColor(m_SelectedColor);
-				//m_ShapeList.push_back(m_PreviewShape);
 				m_latestElementAdded.push_back(DRAWING_SHAPE);
 				sendRegularShape();
 				m_PreviewShape.Reset();
@@ -408,7 +406,6 @@ void Application::handlePackage(Package unpackedData, uint16 msgType)
 	}
 	break;
 	case E::kPING:
-		cout << "Ping received" << endl;
 		m_timeSinceLastPing.restart();
 		MsgPing msg;
 		m_client.sendMessage(&msg, E::kPING);

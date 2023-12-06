@@ -208,6 +208,7 @@ void NetworkServer::syncUser(const Client& messageSender)
 
 void NetworkServer::disconnectUser(const Client& messageSender)
 {
+	cout << "User disconnected: " << messageSender.userIp.value() << ":" << messageSender.userPort << endl;
 	removeUserFromList(messageSender);
 	MsgDisconnected message;
 	sendMessage(&message, E::kDISCONNECTION, messageSender);
@@ -278,7 +279,7 @@ void NetworkServer::saveMessageToSyncList(const Package& unpackedData, const uin
 	m_boardSyncStorage.push_back(dataToStore);
 }
 
-bool NetworkServer::sendPing()
+void NetworkServer::sendPing()
 {
 	MsgPing msg;
 	E::NETWORK_MSG msgType = E::kPING;
@@ -292,7 +293,7 @@ void NetworkServer::checkForTimeout()
 	{
 		if (client.pingTimer.getElapsedTime().asMilliseconds() > 10000)
 		{
-			cout << "User timed out" << endl;
+			cout << "User timed out: " << client.userIp.value() << ":" << client.userPort << endl;
 			disconnectUser(client);
 		}
 	}

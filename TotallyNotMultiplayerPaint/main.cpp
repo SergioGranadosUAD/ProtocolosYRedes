@@ -36,7 +36,6 @@ int main() {
 			{
 				server->sendPing();
 				server->checkForTimeout();
-				cout << "Ping sent" << endl;
 			}
 		}
 		delete server;
